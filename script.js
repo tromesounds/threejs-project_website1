@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
@@ -31,11 +31,11 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 renderer.setClearColor(0x87ceeb);
 
-// Load EXR Background
-const exrLoader = new EXRLoader();
-const exrPath = '/threejs-project_website1/kloofendal_48d_partly_cloudy_puresky_4k.exr';
+// Load HDR Background
+const hdrLoader = new RGBELoader();
+const hdrPath = '/threejs-project_website1/kloofendal_48d_partly_cloudy_puresky_1k.hdr';
 console.log('Attempting to load EXR:', exrPath);
-exrLoader.load(exrPath, (texture) => {
+hdrLoader.load(hdrPath, (texture) => {
     texture.mapping = THREE.EquirectangularReflectionMapping;
     scene.background = texture;
     scene.environment = texture;
