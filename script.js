@@ -34,14 +34,14 @@ renderer.setClearColor(0x87ceeb);
 // Load HDR Background
 const hdrLoader = new RGBELoader();
 const hdrPath = '/threejs-project_website1/kloofendal_48d_partly_cloudy_puresky_1k.hdr';
-console.log('Attempting to load EXR:', exrPath);
+console.log('Attempting to load HDR:', hdrPath);
 hdrLoader.load(hdrPath, (texture) => {
     texture.mapping = THREE.EquirectangularReflectionMapping;
     scene.background = texture;
     scene.environment = texture;
-    console.log('EXR loaded successfully:', texture.image.src);
+    console.log('HDR loaded successfully:', texture.image.src);
 }, undefined, (error) => {
-    console.error('EXR loading error:', error);
+    console.error('HDR loading error:', error);
     scene.background = new THREE.Color(0x87ceeb);
 });
 
