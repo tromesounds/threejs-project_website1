@@ -33,7 +33,7 @@ renderer.setClearColor(0x87ceeb);
 
 // Load HDR Background
 const hdrLoader = new RGBELoader();
-const hdrPath = '/threejs-project_website1/kloofendal_48d_partly_cloudy_puresky_1k.hdr';
+const hdrPath = '/kloofendal_48d_partly_cloudy_puresky_1k.hdr';
 console.log('Attempting to load HDR:', hdrPath);
 hdrLoader.load(hdrPath, (texture) => {
     texture.mapping = THREE.EquirectangularReflectionMapping;
@@ -86,7 +86,7 @@ function createTextGeometry() {
 
 // Load Font for 3D Text
 const fontLoader = new FontLoader();
-const fontPath = '/threejs-project_website1/fonts/Smooth_Circulars_Regular.json';
+const fontPath = '/fonts/Smooth_Circulars_Regular.json';
 console.log('Attempting to load font:', fontPath);
 fontLoader.load(fontPath, (loadedFont) => {
     font = loadedFont;
