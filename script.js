@@ -55,7 +55,8 @@ function spinBackground() {
 // Function to create or update text geometry with responsive size
 let textMesh, font;
 function createTextGeometry() {
-    const isMobile = window.innerWidth < 768 || window.innerHeight < 768;
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const isMobile = window.innerWidth < 768 && isPortrait;
     const textSize = isMobile ? 0.3 : 0.5;
     const textGeometry = new TextGeometry('hypsosis', {
         font: font,
