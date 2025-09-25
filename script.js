@@ -107,16 +107,24 @@ window.addEventListener('mousemove', (event) => {
     mouse.y = -(event.clientY / sizes.height) * 2 + 1;
 });
 
-// Click Handling with Raycaster
+// Click/Touch Handling with Raycaster (iOS compatible)
 const raycaster = new THREE.Raycaster();
-window.addEventListener('click', (event) => {
-    mouse.x = (event.clientX / sizes.width) * 2 - 1;
-    mouse.y = -(event.clientY / sizes.height) * 2 + 1;
+
+function handleInteraction(event) {
+    event.preventDefault(); // Important for iOS
+    
+    // Handle both mouse and touch events
+    const clientX = event.clientX || (event.changedTouches && event.changedTouches[0].clientX);
+    const clientY = event.clientY || (event.changedTouches && event.changedTouches[0].clientY);
+    
+    mouse.x = (clientX / sizes.width) * 2 - 1;
+    mouse.y = -(clientY / sizes.height) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(textMesh);
-    if (intersects.length > 0) {
-        console.log('Text clicked! Navigating to URL...');
-        if (textMesh) {
+    
+    if (textMesh) {
+        const intersects = raycaster.intersectObject(textMesh);
+        if (intersects.length > 0) {
+            console.log('Text clicked! Navigating to URL...');
             textMesh.material.color.set(0xADD8E6);
             setTimeout(() => {
                 textMesh.material.color.set(0xffffff);
@@ -124,7 +132,12 @@ window.addEventListener('click', (event) => {
             }, 200);
         }
     }
-});
+}
+
+// Add multiple event listeners for cross-platform compatibility
+window.addEventListener('click', handleInteraction);
+window.addEventListener('touchend', handleInteraction);
+window.addEventListener('touchstart', handleInteraction);
 
 // Resize Handler
 window.addEventListener('resize', () => {
