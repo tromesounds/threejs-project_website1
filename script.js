@@ -125,7 +125,7 @@ function createGlassPanes() {
 function createBounceText() {
     if (!font || glassPanes.length === 0) return;
     
-    const textGeometry = new TextGeometry('BOUNCE', {
+    const textGeometry = new TextGeometry('hypsosis portfolio', {
         font: font,
         size: 0.15,
         depth: 0.05,
@@ -138,7 +138,7 @@ function createBounceText() {
     });
     
     const textMaterial = new THREE.MeshStandardMaterial({
-        color: 0x00ff88,
+        color: 0xe6f3ff,
         metalness: 0.6,
         roughness: 0.3,
         emissive: 0x001122
