@@ -170,7 +170,7 @@ function createBounceText2() {
     
     const textGeometry = new TextGeometry('omega33', {
         font: font,
-        size: 0.15,
+        size: 0.12,
         depth: 0.05,
         curveSegments: 8,
         bevelEnabled: true,
@@ -204,7 +204,7 @@ function createBounceText3() {
     
     const textGeometry = new TextGeometry('wyzard33', {
         font: font,
-        size: 0.15,
+        size: 0.11,
         depth: 0.05,
         curveSegments: 8,
         bevelEnabled: true,
@@ -238,7 +238,7 @@ function createBounceText4() {
     
     const textGeometry = new TextGeometry('madidas33', {
         font: font,
-        size: 0.15,
+        size: 0.10,
         depth: 0.05,
         curveSegments: 8,
         bevelEnabled: true,
@@ -405,23 +405,23 @@ function updateBounceText4() {
 // Animate Glass Panes In
 function animateGlassPanesIn() {
     glassPanes.forEach((pane, index) => {
-        // Increased stagger delay for more noticeable top-to-bottom effect
-        const delay = index * 200; // 200ms delay between each pane
+        // Stagger delay: each pane starts after the previous one finishes
+        const delay = index * 300; // 300ms delay between each pane start
         
         setTimeout(() => {
             const startX = pane.position.x;
             const targetX = 0;
-            const duration = 1000; // 1 second
+            const duration = 800; // Slightly faster individual animation
             const startTime = Date.now();
             
             function animatePane() {
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 
-                // Easing function for smooth animation
-                const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+                // Smoother easing function
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
                 
-                pane.position.x = startX + (targetX - startX) * easeOutCubic;
+                pane.position.x = startX + (targetX - startX) * easeOutQuart;
                 
                 if (progress < 1) {
                     requestAnimationFrame(animatePane);
