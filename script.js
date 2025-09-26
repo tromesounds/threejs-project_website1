@@ -176,12 +176,12 @@ function updateBounceText() {
     
     // Bounce off boundaries
     if (bounceText.position.x >= maxX || bounceText.position.x <= minX) {
-        bounceVelocity.x *= -1;
+        bounceVelocity.x *= -0.3;
         bounceText.position.x = Math.max(minX, Math.min(maxX, bounceText.position.x));
     }
     
     if (bounceText.position.y >= maxY || bounceText.position.y <= minY) {
-        bounceVelocity.y *= -1;
+        bounceVelocity.y *= -0.3;
         bounceText.position.y = Math.max(minY, Math.min(maxY, bounceText.position.y));
     }
     
