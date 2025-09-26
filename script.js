@@ -186,7 +186,7 @@ function updateBounceText() {
     }
     
     // Add slight rotation for visual interest
-    bounceText.rotation.z += 0.01;
+    //bounceText.rotation.z += 0.01;
 }
 
 // Animate Glass Panes In
