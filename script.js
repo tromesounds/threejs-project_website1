@@ -52,12 +52,82 @@ function spinBackground() {
     scene.backgroundRotation.y = rotation;
 }
 
+// Glass Panes Variables
+let glassPanes = [];
+let isTransitioning = false;
+
+// Create Glass Panes
+function createGlassPanes() {
+    const aspect = 16 / 9;
+    const paneWidth = 2.5;
+    const paneHeight = paneWidth / aspect;
+    const spacing = 0.3;
+    const totalHeight = (paneHeight * 4) + (spacing * 3);
+    const startY = totalHeight / 2 - paneHeight / 2;
+
+    // Create glass material
+    const glassMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        transmission: 0.9,
+        opacity: 0.1,
+        roughness: 0.1,
+        metalness: 0,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
+        transparent: true,
+        side: THREE.DoubleSide
+    });
+
+    for (let i = 0; i < 4; i++) {
+        const geometry = new THREE.PlaneGeometry(paneWidth, paneHeight);
+        const pane = new THREE.Mesh(geometry, glassMaterial);
+        
+        // Position panes
+        pane.position.x = 10; // Start off-screen to the right
+        pane.position.y = startY - (i * (paneHeight + spacing));
+        pane.position.z = 0;
+        
+        glassPanes.push(pane);
+        scene.add(pane);
+    }
+}
+
+// Animate Glass Panes In
+function animateGlassPanesIn() {
+    glassPanes.forEach((pane, index) => {
+        // Stagger the animation slightly for each pane
+        const delay = index * 100;
+        
+        setTimeout(() => {
+            const startX = pane.position.x;
+            const targetX = 0;
+            const duration = 1000; // 1 second
+            const startTime = Date.now();
+            
+            function animatePane() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function for smooth animation
+                const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+                
+                pane.position.x = startX + (targetX - startX) * easeOutCubic;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animatePane);
+                }
+            }
+            
+            animatePane();
+        }, delay);
+    });
+}
+
 // Function to create or update text geometry with responsive size
 let textMesh, font;
 function createTextGeometry() {
-    // Check if it's a mobile device in portrait orientation
-    const isMobilePortrait = (window.innerWidth < 768) && (window.innerHeight > window.innerWidth);
-    const isMobile = isMobilePortrait;
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const isMobile = window.innerWidth < 768 && isPortrait;
     const textSize = isMobile ? 0.3 : 0.5;
     const textGeometry = new TextGeometry('hypsosis', {
         font: font,
@@ -93,6 +163,7 @@ console.log('Attempting to load font:', fontPath);
 fontLoader.load(fontPath, (loadedFont) => {
     font = loadedFont;
     createTextGeometry();
+    createGlassPanes(); // Create glass panes when font loads
     console.log('Text loaded successfully');
 }, undefined, (error) => {
     console.error('Font loading error:', error);
@@ -113,6 +184,8 @@ window.addEventListener('mousemove', (event) => {
 const raycaster = new THREE.Raycaster();
 
 function handleInteraction(event) {
+    if (isTransitioning) return; // Prevent multiple clicks during transition
+    
     event.preventDefault(); // Important for iOS
     
     // Handle both mouse and touch events
@@ -126,12 +199,41 @@ function handleInteraction(event) {
     if (textMesh) {
         const intersects = raycaster.intersectObject(textMesh);
         if (intersects.length > 0) {
-            console.log('Text clicked! Navigating to URL...');
+            console.log('Text clicked! Starting transition...');
+            isTransitioning = true;
+            
+            // Change text color briefly
             textMesh.material.color.set(0xADD8E6);
+            
+            // Animate text to the left
+            const startX = textMesh.position.x;
+            const targetX = -10; // Move off-screen to the left
+            const duration = 1000; // 1 second
+            const startTime = Date.now();
+            
+            function animateText() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function for smooth animation
+                const easeInCubic = Math.pow(progress, 3);
+                
+                textMesh.position.x = startX + (targetX - startX) * easeInCubic;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateText);
+                } else {
+                    // Hide text when animation completes
+                    textMesh.visible = false;
+                }
+            }
+            
+            animateText();
+            
+            // Start glass panes animation after a short delay
             setTimeout(() => {
-                textMesh.material.color.set(0xffffff);
-                window.location.href = 'https://soundcloud.com/omega33dj/hyper-reality';
-            }, 200);
+                animateGlassPanesIn();
+            }, 300);
         }
     }
 }
@@ -156,7 +258,7 @@ let time = 0;
 function animate() {
     requestAnimationFrame(animate);
     spinBackground();
-    if (textMesh) {
+    if (textMesh && textMesh.visible && !isTransitioning) {
         const mouseWorld = new THREE.Vector3(mouse.x * 5, mouse.y * 5, 10);
         textMesh.lookAt(mouseWorld);
         time += 0.01;
