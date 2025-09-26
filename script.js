@@ -165,8 +165,8 @@ function updateBounceText() {
     
     // Calculate boundaries (accounting for text size)
     const textBounds = 0.3; // Approximate text width/height
-    const maxX = firstPane.position.x + (paneWidth / 2) - textBounds;
-    const minX = firstPane.position.x - (paneWidth / 2) + textBounds;
+    const maxX = firstPane.position.x + (paneWidth / 3) - textBounds;
+    const minX = firstPane.position.x - (paneWidth / 3) + textBounds;
     const maxY = firstPane.position.y + (paneHeight / 2) - textBounds;
     const minY = firstPane.position.y - (paneHeight / 2) + textBounds;
     
