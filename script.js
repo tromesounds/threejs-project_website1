@@ -626,7 +626,11 @@ window.addEventListener('resize', () => {
     camera.aspect = sizes.width / sizes.height;
     camera.updateProjectionMatrix();
     renderer.setSize(sizes.width, sizes.height);
-    if (font) createTextGeometry();
+    
+    // Only recreate text if we haven't transitioned yet
+    if (font && !isTransitioning && (!textMesh || textMesh.visible)) {
+        createTextGeometry();
+    }
 });
 
 // Animation Loop
