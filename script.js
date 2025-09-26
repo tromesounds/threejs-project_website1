@@ -125,7 +125,7 @@ function createGlassPanes() {
 function createBounceText() {
     if (!font || glassPanes.length === 0) return;
     
-    const textGeometry = new TextGeometry('hypsosis portfolio', {
+    const textGeometry = new TextGeometry('hypsosis', {
         font: font,
         size: 0.15,
         depth: 0.05,
