@@ -229,7 +229,7 @@ function handleInteraction(event) {
                 textMesh.material.opacity = originalOpacity * (1 - progress);
                 
                 // Add slight scale down effect
-                const scale = 1 - (progress * 0.5);
+                const scale = 1 - (progress * 0.9);
                 textMesh.scale.set(scale, scale, scale);
                 
                 if (progress < 1) {
