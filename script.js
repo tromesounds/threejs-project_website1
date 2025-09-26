@@ -59,8 +59,12 @@ let hoveredPane = null;
 let originalPositions = []; // Store original positions for hover animation
 let bounceText = null; // Text bouncing inside first pane
 let bounceText2 = null; // Text bouncing inside second pane
+let bounceText3 = null; // Text bouncing inside third pane
+let bounceText4 = null; // Text bouncing inside fourth pane
 let bounceVelocity = { x: 0.02, y: 0.015 }; // Bounce speed for first text
-let bounceVelocity2 = { x: -0.025, y: 0.018 }; // Bounce speed for second text (different speeds for variety)
+let bounceVelocity2 = { x: -0.025, y: 0.018 }; // Bounce speed for second text
+let bounceVelocity3 = { x: 0.018, y: -0.022 }; // Bounce speed for third text
+let bounceVelocity4 = { x: -0.015, y: -0.025 }; // Bounce speed for fourth text
 
 // Create Glass Panes
 function createGlassPanes() {
@@ -117,10 +121,12 @@ function createGlassPanes() {
         scene.add(pane);
     }
     
-    // Create bouncing text for the first and second panes after all panes are created
+    // Create bouncing text for all panes after all panes are created
     setTimeout(() => {
         createBounceText();
         createBounceText2();
+        createBounceText3();
+        createBounceText4();
     }, 1000); // Wait for panes to slide in
 }
 
@@ -192,6 +198,74 @@ function createBounceText2() {
     scene.add(bounceText2);
 }
 
+// Create Bouncing Text inside the third glass pane
+function createBounceText3() {
+    if (!font || glassPanes.length < 3) return;
+    
+    const textGeometry = new TextGeometry('hypsosis', {
+        font: font,
+        size: 0.15,
+        depth: 0.05,
+        curveSegments: 8,
+        bevelEnabled: true,
+        bevelThickness: 0.02,
+        bevelSize: 0.01,
+        bevelOffset: 0,
+        bevelSegments: 3
+    });
+    
+    const textMaterial = new THREE.MeshStandardMaterial({
+        color: 0xe6f3ff,
+        metalness: 0.6,
+        roughness: 0.3,
+        emissive: 0x001122
+    });
+    
+    bounceText3 = new THREE.Mesh(textGeometry, textMaterial);
+    textGeometry.center();
+    
+    // Position text inside the third glass pane
+    const thirdPane = glassPanes[2];
+    bounceText3.position.copy(thirdPane.position);
+    bounceText3.position.z = 0.1; // Slightly in front of the pane
+    
+    scene.add(bounceText3);
+}
+
+// Create Bouncing Text inside the fourth glass pane
+function createBounceText4() {
+    if (!font || glassPanes.length < 4) return;
+    
+    const textGeometry = new TextGeometry('hypsosis', {
+        font: font,
+        size: 0.15,
+        depth: 0.05,
+        curveSegments: 8,
+        bevelEnabled: true,
+        bevelThickness: 0.02,
+        bevelSize: 0.01,
+        bevelOffset: 0,
+        bevelSegments: 3
+    });
+    
+    const textMaterial = new THREE.MeshStandardMaterial({
+        color: 0xe6f3ff,
+        metalness: 0.6,
+        roughness: 0.3,
+        emissive: 0x001122
+    });
+    
+    bounceText4 = new THREE.Mesh(textGeometry, textMaterial);
+    textGeometry.center();
+    
+    // Position text inside the fourth glass pane
+    const fourthPane = glassPanes[3];
+    bounceText4.position.copy(fourthPane.position);
+    bounceText4.position.z = 0.1; // Slightly in front of the pane
+    
+    scene.add(bounceText4);
+}
+
 // Update bouncing text animation
 function updateBounceText() {
     if (!bounceText || glassPanes.length === 0) return;
@@ -258,6 +332,74 @@ function updateBounceText2() {
     
     // Add slight rotation for visual interest
     //bounceText2.rotation.z += 0.01;
+}
+
+// Update third bouncing text animation
+function updateBounceText3() {
+    if (!bounceText3 || glassPanes.length < 3) return;
+    
+    const thirdPane = glassPanes[2];
+    const paneWidth = 2.5;
+    const paneHeight = paneWidth / (16/9);
+    
+    // Calculate boundaries (accounting for text size)
+    const textBounds = 0.3; // Approximate text width/height
+    const maxX = thirdPane.position.x + (paneWidth / 3) - textBounds;
+    const minX = thirdPane.position.x - (paneWidth / 3) + textBounds;
+    const maxY = thirdPane.position.y + (paneHeight / 2) - textBounds;
+    const minY = thirdPane.position.y - (paneHeight / 2) + textBounds;
+    
+    // Update position
+    bounceText3.position.x += bounceVelocity3.x;
+    bounceText3.position.y += bounceVelocity3.y;
+    
+    // Bounce off boundaries
+    if (bounceText3.position.x >= maxX || bounceText3.position.x <= minX) {
+        bounceVelocity3.x *= -0.3;
+        bounceText3.position.x = Math.max(minX, Math.min(maxX, bounceText3.position.x));
+    }
+    
+    if (bounceText3.position.y >= maxY || bounceText3.position.y <= minY) {
+        bounceVelocity3.y *= -0.3;
+        bounceText3.position.y = Math.max(minY, Math.min(maxY, bounceText3.position.y));
+    }
+    
+    // Add slight rotation for visual interest
+    //bounceText3.rotation.z += 0.01;
+}
+
+// Update fourth bouncing text animation
+function updateBounceText4() {
+    if (!bounceText4 || glassPanes.length < 4) return;
+    
+    const fourthPane = glassPanes[3];
+    const paneWidth = 2.5;
+    const paneHeight = paneWidth / (16/9);
+    
+    // Calculate boundaries (accounting for text size)
+    const textBounds = 0.3; // Approximate text width/height
+    const maxX = fourthPane.position.x + (paneWidth / 3) - textBounds;
+    const minX = fourthPane.position.x - (paneWidth / 3) + textBounds;
+    const maxY = fourthPane.position.y + (paneHeight / 2) - textBounds;
+    const minY = fourthPane.position.y - (paneHeight / 2) + textBounds;
+    
+    // Update position
+    bounceText4.position.x += bounceVelocity4.x;
+    bounceText4.position.y += bounceVelocity4.y;
+    
+    // Bounce off boundaries
+    if (bounceText4.position.x >= maxX || bounceText4.position.x <= minX) {
+        bounceVelocity4.x *= -0.3;
+        bounceText4.position.x = Math.max(minX, Math.min(maxX, bounceText4.position.x));
+    }
+    
+    if (bounceText4.position.y >= maxY || bounceText4.position.y <= minY) {
+        bounceVelocity4.y *= -0.3;
+        bounceText4.position.y = Math.max(minY, Math.min(maxY, bounceText4.position.y));
+    }
+    
+    // Add slight rotation for visual interest
+    //bounceText4.rotation.z += 0.01;
 }
 
 // Animate Glass Panes In
@@ -501,6 +643,8 @@ function animate() {
     // Update bouncing text
     updateBounceText();
     updateBounceText2();
+    updateBounceText3();
+    updateBounceText4();
     
     if (textMesh && textMesh.visible && !isTransitioning) {
         const mouseWorld = new THREE.Vector3(mouse.x * 5, mouse.y * 5, 10);
