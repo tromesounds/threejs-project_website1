@@ -61,25 +61,33 @@ function createGlassPanes() {
     const aspect = 16 / 9;
     const paneWidth = 2.5;
     const paneHeight = paneWidth / aspect;
+    const paneDepth = 0.1; // Add depth to make them 3D
     const spacing = 0.3;
     const totalHeight = (paneHeight * 4) + (spacing * 3);
     const startY = totalHeight / 2 - paneHeight / 2;
 
-    // Create glass material
+    // Create glass material with iridescent effect
     const glassMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        transmission: 0.9,
-        opacity: 0.1,
-        roughness: 0.1,
-        metalness: 0,
+        color: 0xe6f3ff, // Slight blue tint for glass
+        transmission: 0.6, // Less transparent, more opaque
+        opacity: 0.4, // More visible
+        roughness: 0.05,
+        metalness: 0.1,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.1,
+        clearcoatRoughness: 0.02, // More glossy
         transparent: true,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
+        ior: 1.5, // Index of refraction for glass
+        thickness: paneDepth,
+        envMapIntensity: 1.5, // Enhanced reflections for glossy effect
+        iridescence: 1.0, // Iridescent effect
+        iridescenceIOR: 1.3,
+        iridescenceThicknessRange: [100, 400]
     });
 
     for (let i = 0; i < 4; i++) {
-        const geometry = new THREE.PlaneGeometry(paneWidth, paneHeight);
+        // Use BoxGeometry for 3D depth instead of PlaneGeometry
+        const geometry = new THREE.BoxGeometry(paneWidth, paneHeight, paneDepth);
         const pane = new THREE.Mesh(geometry, glassMaterial);
         
         // Position panes
@@ -205,30 +213,34 @@ function handleInteraction(event) {
             // Change text color briefly
             textMesh.material.color.set(0xADD8E6);
             
-            // Animate text to the left
-            const startX = textMesh.position.x;
-            const targetX = -10; // Move off-screen to the left
-            const duration = 1000; // 1 second
+            // Dissolve text instead of moving it
+            const duration = 1500; // 1.5 seconds for dissolve
             const startTime = Date.now();
+            const originalOpacity = textMesh.material.opacity || 1;
             
-            function animateText() {
+            // Make material transparent to enable opacity changes
+            textMesh.material.transparent = true;
+            
+            function dissolveText() {
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 
-                // Easing function for smooth animation
-                const easeInCubic = Math.pow(progress, 3);
+                // Fade out opacity
+                textMesh.material.opacity = originalOpacity * (1 - progress);
                 
-                textMesh.position.x = startX + (targetX - startX) * easeInCubic;
+                // Add slight scale down effect
+                const scale = 1 - (progress * 0.2);
+                textMesh.scale.set(scale, scale, scale);
                 
                 if (progress < 1) {
-                    requestAnimationFrame(animateText);
+                    requestAnimationFrame(dissolveText);
                 } else {
                     // Hide text when animation completes
                     textMesh.visible = false;
                 }
             }
             
-            animateText();
+            dissolveText();
             
             // Start glass panes animation after a short delay
             setTimeout(() => {
