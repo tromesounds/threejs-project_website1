@@ -211,10 +211,10 @@ function handleInteraction(event) {
             isTransitioning = true;
             
             // Change text color briefly
-            textMesh.material.color.set(0xADD8E6);
+            //textMesh.material.color.set(0xADD8E6);
             
             // Dissolve text instead of moving it
-            const duration = 1500; // 1.5 seconds for dissolve
+            const duration = 150; // 1.5 seconds for dissolve
             const startTime = Date.now();
             const originalOpacity = textMesh.material.opacity || 1;
             
@@ -229,7 +229,7 @@ function handleInteraction(event) {
                 textMesh.material.opacity = originalOpacity * (1 - progress);
                 
                 // Add slight scale down effect
-                const scale = 1 - (progress * 0.2);
+                const scale = 1 - (progress * 0.5);
                 textMesh.scale.set(scale, scale, scale);
                 
                 if (progress < 1) {
