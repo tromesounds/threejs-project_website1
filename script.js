@@ -145,6 +145,65 @@ function animateGlassPanesIn() {
     });
 }
 
+// Animate Glass Panes for hover effects
+function animateGlassPanes() {
+    glassPanes.forEach((pane, index) => {
+        const userData = pane.userData;
+        const isHovered = pane === hoveredPane;
+        
+        // Animate scale
+        const scaleSpeed = 0.1;
+        userData.originalScale += (userData.targetScale - userData.originalScale) * scaleSpeed;
+        pane.scale.set(userData.originalScale, userData.originalScale, userData.originalScale);
+        
+        // Calculate position adjustments to make room for expanded pane
+        let targetY = userData.originalY;
+        
+        if (hoveredPane && hoveredPane !== pane) {
+            const hoveredIndex = hoveredPane.userData.index;
+            const paneSpacing = 0.3;
+            const expandedExtraHeight = (1.2 - 1) * (2.5 / (16/9)) / 2; // Half of extra height
+            
+            if (index < hoveredIndex) {
+                // Panes above the hovered pane move up
+                targetY = userData.originalY + expandedExtraHeight + paneSpacing * 0.3;
+            } else if (index > hoveredIndex) {
+                // Panes below the hovered pane move down
+                targetY = userData.originalY - expandedExtraHeight - paneSpacing * 0.3;
+            }
+        }
+        
+        // Animate position
+        const posSpeed = 0.1;
+        pane.position.y += (targetY - pane.position.y) * posSpeed;
+    });
+}
+
+// Handle Glass Pane Hover Effects
+function updateGlassPaneHover() {
+    if (glassPanes.length === 0) return;
+    
+    // Cast ray to check for glass pane intersections
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(glassPanes);
+    
+    const newHoveredPane = intersects.length > 0 ? intersects[0].object : null;
+    
+    // If hover state changed
+    if (newHoveredPane !== hoveredPane) {
+        // Reset previous hovered pane
+        if (hoveredPane) {
+            hoveredPane.userData.targetScale = 1;
+        }
+        
+        // Set new hovered pane
+        hoveredPane = newHoveredPane;
+        if (hoveredPane) {
+            hoveredPane.userData.targetScale = 1.2; // 20% larger
+        }
+    }
+}
+
 // Function to create or update text geometry with responsive size
 let textMesh, font;
 function createTextGeometry() {
