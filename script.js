@@ -58,7 +58,9 @@ let isTransitioning = false;
 let hoveredPane = null;
 let originalPositions = []; // Store original positions for hover animation
 let bounceText = null; // Text bouncing inside first pane
-let bounceVelocity = { x: 0.02, y: 0.015 }; // Bounce speed
+let bounceText2 = null; // Text bouncing inside second pane
+let bounceVelocity = { x: 0.02, y: 0.015 }; // Bounce speed for first text
+let bounceVelocity2 = { x: -0.025, y: 0.018 }; // Bounce speed for second text (different speeds for variety)
 
 // Create Glass Panes
 function createGlassPanes() {
@@ -115,15 +117,50 @@ function createGlassPanes() {
         scene.add(pane);
     }
     
-    // Create bouncing text for the first pane after all panes are created
+    // Create bouncing text for the first and second panes after all panes are created
     setTimeout(() => {
         createBounceText();
+        createBounceText2();
     }, 1000); // Wait for panes to slide in
 }
 
 // Create Bouncing Text inside the first glass pane
 function createBounceText() {
     if (!font || glassPanes.length === 0) return;
+    
+    const textGeometry = new TextGeometry('BOUNCE', {
+        font: font,
+        size: 0.15,
+        depth: 0.05,
+        curveSegments: 8,
+        bevelEnabled: true,
+        bevelThickness: 0.02,
+        bevelSize: 0.01,
+        bevelOffset: 0,
+        bevelSegments: 3
+    });
+    
+    const textMaterial = new THREE.MeshStandardMaterial({
+        color: 0x00ff88,
+        metalness: 0.6,
+        roughness: 0.3,
+        emissive: 0x001122
+    });
+    
+    bounceText = new THREE.Mesh(textGeometry, textMaterial);
+    textGeometry.center();
+    
+    // Position text inside the first glass pane
+    const firstPane = glassPanes[0];
+    bounceText.position.copy(firstPane.position);
+    bounceText.position.z = 0.1; // Slightly in front of the pane
+    
+    scene.add(bounceText);
+}
+
+// Create Bouncing Text inside the second glass pane
+function createBounceText2() {
+    if (!font || glassPanes.length < 2) return;
     
     const textGeometry = new TextGeometry('hypsosis', {
         font: font,
@@ -144,15 +181,15 @@ function createBounceText() {
         emissive: 0x001122
     });
     
-    bounceText = new THREE.Mesh(textGeometry, textMaterial);
+    bounceText2 = new THREE.Mesh(textGeometry, textMaterial);
     textGeometry.center();
     
-    // Position text inside the first glass pane
-    const firstPane = glassPanes[0];
-    bounceText.position.copy(firstPane.position);
-    bounceText.position.z = 0.1; // Slightly in front of the pane
+    // Position text inside the second glass pane
+    const secondPane = glassPanes[1];
+    bounceText2.position.copy(secondPane.position);
+    bounceText2.position.z = 0.1; // Slightly in front of the pane
     
-    scene.add(bounceText);
+    scene.add(bounceText2);
 }
 
 // Update bouncing text animation
@@ -165,8 +202,8 @@ function updateBounceText() {
     
     // Calculate boundaries (accounting for text size)
     const textBounds = 0.3; // Approximate text width/height
-    const maxX = firstPane.position.x + (paneWidth / 3) - textBounds;
-    const minX = firstPane.position.x - (paneWidth / 3) + textBounds;
+    const maxX = firstPane.position.x + (paneWidth / 2) - textBounds;
+    const minX = firstPane.position.x - (paneWidth / 2) + textBounds;
     const maxY = firstPane.position.y + (paneHeight / 2) - textBounds;
     const minY = firstPane.position.y - (paneHeight / 2) + textBounds;
     
@@ -176,17 +213,17 @@ function updateBounceText() {
     
     // Bounce off boundaries
     if (bounceText.position.x >= maxX || bounceText.position.x <= minX) {
-        bounceVelocity.x *= -0.3;
+        bounceVelocity.x *= -1;
         bounceText.position.x = Math.max(minX, Math.min(maxX, bounceText.position.x));
     }
     
     if (bounceText.position.y >= maxY || bounceText.position.y <= minY) {
-        bounceVelocity.y *= -0.3;
+        bounceVelocity.y *= -1;
         bounceText.position.y = Math.max(minY, Math.min(maxY, bounceText.position.y));
     }
     
     // Add slight rotation for visual interest
-    //bounceText.rotation.z += 0.01;
+    bounceText.rotation.z += 0.01;
 }
 
 // Animate Glass Panes In
@@ -429,6 +466,7 @@ function animate() {
     
     // Update bouncing text
     updateBounceText();
+    updateBounceText2();
     
     if (textMesh && textMesh.visible && !isTransitioning) {
         const mouseWorld = new THREE.Vector3(mouse.x * 5, mouse.y * 5, 10);
