@@ -55,6 +55,8 @@ function spinBackground() {
 // Glass Panes Variables
 let glassPanes = [];
 let isTransitioning = false;
+let hoveredPane = null;
+let originalPositions = []; // Store original positions for hover animation
 
 // Create Glass Panes
 function createGlassPanes() {
@@ -95,6 +97,18 @@ function createGlassPanes() {
         pane.position.y = startY - (i * (paneHeight + spacing));
         pane.position.z = 0;
         
+        // Store original position for hover effects
+        const originalY = startY - (i * (paneHeight + spacing));
+        originalPositions.push({ x: 0, y: originalY, z: 0 });
+        
+        // Add hover properties
+        pane.userData = { 
+            index: i, 
+            originalScale: 1, 
+            targetScale: 1,
+            originalY: originalY
+        };
+        
         glassPanes.push(pane);
         scene.add(pane);
     }
@@ -103,8 +117,8 @@ function createGlassPanes() {
 // Animate Glass Panes In
 function animateGlassPanesIn() {
     glassPanes.forEach((pane, index) => {
-        // Stagger the animation slightly for each pane
-        const delay = index * 100;
+        // Increased stagger delay for more noticeable top-to-bottom effect
+        const delay = index * 200; // 200ms delay between each pane
         
         setTimeout(() => {
             const startX = pane.position.x;
@@ -186,6 +200,9 @@ const mouse = new THREE.Vector2();
 window.addEventListener('mousemove', (event) => {
     mouse.x = (event.clientX / sizes.width) * 2 - 1;
     mouse.y = -(event.clientY / sizes.height) * 2 + 1;
+    
+    // Update glass pane hover effects
+    updateGlassPaneHover();
 });
 
 // Click/Touch Handling with Raycaster (iOS compatible)
@@ -211,10 +228,10 @@ function handleInteraction(event) {
             isTransitioning = true;
             
             // Change text color briefly
-            //textMesh.material.color.set(0xADD8E6);
+            textMesh.material.color.set(0xADD8E6);
             
             // Dissolve text instead of moving it
-            const duration = 150; // 1.5 seconds for dissolve
+            const duration = 1500; // 1.5 seconds for dissolve
             const startTime = Date.now();
             const originalOpacity = textMesh.material.opacity || 1;
             
@@ -229,7 +246,7 @@ function handleInteraction(event) {
                 textMesh.material.opacity = originalOpacity * (1 - progress);
                 
                 // Add slight scale down effect
-                const scale = 1 - (progress * 0.9);
+                const scale = 1 - (progress * 0.2);
                 textMesh.scale.set(scale, scale, scale);
                 
                 if (progress < 1) {
@@ -270,6 +287,12 @@ let time = 0;
 function animate() {
     requestAnimationFrame(animate);
     spinBackground();
+    
+    // Animate glass pane hover effects
+    if (glassPanes.length > 0) {
+        animateGlassPanes();
+    }
+    
     if (textMesh && textMesh.visible && !isTransitioning) {
         const mouseWorld = new THREE.Vector3(mouse.x * 5, mouse.y * 5, 10);
         textMesh.lookAt(mouseWorld);
