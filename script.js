@@ -168,7 +168,7 @@ function createBounceText() {
 function createBounceText2() {
     if (!font || glassPanes.length < 2) return;
     
-    const textGeometry = new TextGeometry('hypsosis', {
+    const textGeometry = new TextGeometry('omega33', {
         font: font,
         size: 0.15,
         depth: 0.05,
@@ -202,7 +202,7 @@ function createBounceText2() {
 function createBounceText3() {
     if (!font || glassPanes.length < 3) return;
     
-    const textGeometry = new TextGeometry('hypsosis', {
+    const textGeometry = new TextGeometry('wyzard33', {
         font: font,
         size: 0.15,
         depth: 0.05,
@@ -236,7 +236,7 @@ function createBounceText3() {
 function createBounceText4() {
     if (!font || glassPanes.length < 4) return;
     
-    const textGeometry = new TextGeometry('hypsosis', {
+    const textGeometry = new TextGeometry('madidas33', {
         font: font,
         size: 0.15,
         depth: 0.05,
