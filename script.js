@@ -57,6 +57,8 @@ let glassPanes = [];
 let isTransitioning = false;
 let hoveredPane = null;
 let originalPositions = []; // Store original positions for hover animation
+let bounceText = null; // Text bouncing inside first pane
+let bounceVelocity = { x: 0.02, y: 0.015 }; // Bounce speed
 
 // Create Glass Panes
 function createGlassPanes() {
@@ -112,6 +114,11 @@ function createGlassPanes() {
         glassPanes.push(pane);
         scene.add(pane);
     }
+    
+    // Create bouncing text for the first pane after all panes are created
+    setTimeout(() => {
+        createBounceText();
+    }, 1000); // Wait for panes to slide in
 }
 
 // Animate Glass Panes In
@@ -351,6 +358,9 @@ function animate() {
     if (glassPanes.length > 0) {
         animateGlassPanes();
     }
+    
+    // Update bouncing text
+    updateBounceText();
     
     if (textMesh && textMesh.visible && !isTransitioning) {
         const mouseWorld = new THREE.Vector3(mouse.x * 5, mouse.y * 5, 10);
