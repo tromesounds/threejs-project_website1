@@ -128,7 +128,7 @@ function createGlassPanes() {
 function createBounceText() {
     if (!font || glassPanes.length === 0) return;
     
-    const textGeometry = new TextGeometry('BOUNCE', {
+    const textGeometry = new TextGeometry('hypsosis', {
         font: font,
         size: 0.15,
         depth: 0.05,
@@ -141,7 +141,7 @@ function createBounceText() {
     });
     
     const textMaterial = new THREE.MeshStandardMaterial({
-        color: 0x00ff88,
+        color: 0xe6f3ff,
         metalness: 0.6,
         roughness: 0.3,
         emissive: 0x001122
@@ -202,8 +202,8 @@ function updateBounceText() {
     
     // Calculate boundaries (accounting for text size)
     const textBounds = 0.3; // Approximate text width/height
-    const maxX = firstPane.position.x + (paneWidth / 2) - textBounds;
-    const minX = firstPane.position.x - (paneWidth / 2) + textBounds;
+    const maxX = firstPane.position.x + (paneWidth / 3) - textBounds;
+    const minX = firstPane.position.x - (paneWidth / 3) + textBounds;
     const maxY = firstPane.position.y + (paneHeight / 2) - textBounds;
     const minY = firstPane.position.y - (paneHeight / 2) + textBounds;
     
@@ -213,17 +213,51 @@ function updateBounceText() {
     
     // Bounce off boundaries
     if (bounceText.position.x >= maxX || bounceText.position.x <= minX) {
-        bounceVelocity.x *= -1;
+        bounceVelocity.x *= -0.3;
         bounceText.position.x = Math.max(minX, Math.min(maxX, bounceText.position.x));
     }
     
     if (bounceText.position.y >= maxY || bounceText.position.y <= minY) {
-        bounceVelocity.y *= -1;
+        bounceVelocity.y *= -0.3;
         bounceText.position.y = Math.max(minY, Math.min(maxY, bounceText.position.y));
     }
     
     // Add slight rotation for visual interest
-    bounceText.rotation.z += 0.01;
+    //bounceText.rotation.z += 0.01;
+}
+
+// Update second bouncing text animation
+function updateBounceText2() {
+    if (!bounceText2 || glassPanes.length < 2) return;
+    
+    const secondPane = glassPanes[1];
+    const paneWidth = 2.5;
+    const paneHeight = paneWidth / (16/9);
+    
+    // Calculate boundaries (accounting for text size)
+    const textBounds = 0.3; // Approximate text width/height
+    const maxX = secondPane.position.x + (paneWidth / 3) - textBounds;
+    const minX = secondPane.position.x - (paneWidth / 3) + textBounds;
+    const maxY = secondPane.position.y + (paneHeight / 2) - textBounds;
+    const minY = secondPane.position.y - (paneHeight / 2) + textBounds;
+    
+    // Update position
+    bounceText2.position.x += bounceVelocity2.x;
+    bounceText2.position.y += bounceVelocity2.y;
+    
+    // Bounce off boundaries
+    if (bounceText2.position.x >= maxX || bounceText2.position.x <= minX) {
+        bounceVelocity2.x *= -0.3;
+        bounceText2.position.x = Math.max(minX, Math.min(maxX, bounceText2.position.x));
+    }
+    
+    if (bounceText2.position.y >= maxY || bounceText2.position.y <= minY) {
+        bounceVelocity2.y *= -0.3;
+        bounceText2.position.y = Math.max(minY, Math.min(maxY, bounceText2.position.y));
+    }
+    
+    // Add slight rotation for visual interest
+    //bounceText2.rotation.z += 0.01;
 }
 
 // Animate Glass Panes In
