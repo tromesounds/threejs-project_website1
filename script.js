@@ -45,11 +45,15 @@ hdrLoader.load(hdrPath, (texture) => {
     scene.background = new THREE.Color(0x87ceeb);
 });
 
-// Spinning Background
+// Spinning Background (with mobile optimization)
 let rotation = 0;
 function spinBackground() {
-    rotation += 0.001;
-    scene.backgroundRotation.y = rotation;
+    const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
+    const rotationSpeed = isMobile ? 0.0005 : 0.001; // Slower on mobile
+    rotation += rotationSpeed;
+    if (scene.backgroundRotation) {
+        scene.backgroundRotation.y = rotation;
+    }
 }
 
 // Glass Panes Variables
@@ -170,24 +174,30 @@ function createGlassPanes() {
     }, 1000); // Wait for panes to slide in
 }
 
-// Update noise texture for animated ripple effect
+// Update noise texture for animated ripple effect (with mobile optimization)
 function updateRippleEffect() {
     if (glassPanes.length === 0) return;
+    
+    // Reduce update frequency on mobile
+    const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
+    const updateChance = isMobile ? 0.02 : 0.05; // Reduce from 5% to 2% on mobile
     
     glassPanes.forEach(pane => {
         const texture = pane.userData.noiseTexture;
         if (texture) {
-            // Animate the texture offset for flowing ripple effect
-            texture.offset.x += 0.001;
-            texture.offset.y += 0.0005;
+            // Animate the texture offset for flowing ripple effect (slower on mobile)
+            const offsetSpeed = isMobile ? 0.0005 : 0.001;
+            texture.offset.x += offsetSpeed;
+            texture.offset.y += offsetSpeed * 0.5;
             
             // Occasionally regenerate noise for TV static effect
-            if (Math.random() < 0.05) { // 5% chance per frame
+            if (Math.random() < updateChance) {
                 const size = 256;
                 const data = texture.image.data;
                 
-                // Update random portions of the texture
-                for (let i = 0; i < 1000; i++) { // Update 1000 random pixels
+                // Update fewer random pixels on mobile
+                const pixelsToUpdate = isMobile ? 500 : 1000;
+                for (let i = 0; i < pixelsToUpdate; i++) {
                     const pixelIndex = Math.floor(Math.random() * size * size) * 4;
                     const noise = Math.random();
                     data[pixelIndex] = noise * 255;     // R
@@ -690,18 +700,27 @@ window.addEventListener('click', handleInteraction);
 window.addEventListener('touchend', handleInteraction);
 window.addEventListener('touchstart', handleInteraction);
 
-// Resize Handler
+// Resize Handler with debouncing and mobile optimization
+let resizeTimeout;
 window.addEventListener('resize', () => {
-    sizes.width = window.innerWidth;
-    sizes.height = window.innerHeight;
-    camera.aspect = sizes.width / sizes.height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(sizes.width, sizes.height);
-    
-    // Only recreate text if we haven't transitioned yet
-    if (font && !isTransitioning && (!textMesh || textMesh.visible)) {
-        createTextGeometry();
-    }
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        sizes.width = window.innerWidth;
+        sizes.height = window.innerHeight;
+        camera.aspect = sizes.width / sizes.height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(sizes.width, sizes.height);
+        
+        // Force garbage collection on mobile after resize
+        if (renderer.info.memory) {
+            renderer.renderLists.dispose();
+        }
+        
+        // Only recreate text if we haven't transitioned yet
+        if (font && !isTransitioning && (!textMesh || textMesh.visible)) {
+            createTextGeometry();
+        }
+    }, 100); // Debounce resize events
 });
 
 // Animation Loop
