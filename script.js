@@ -578,7 +578,7 @@ function handleInteraction(event) {
             textMesh.material.color.set(0xADD8E6);
             
             // Dissolve text instead of moving it
-            const duration = 1500; // 1.5 seconds for dissolve
+            const duration = 500; // 0.5 seconds for dissolve
             const startTime = Date.now();
             const originalOpacity = textMesh.material.opacity || 1;
             
