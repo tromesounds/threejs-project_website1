@@ -90,7 +90,7 @@ function createGlassPanes() {
         ior: 1.5, // Index of refraction for glass
         thickness: paneDepth,
         envMapIntensity: 1.5, // Enhanced reflections for glossy effect
-        iridescence: 1.0, // Iridescent effect
+        iridescence: 3.0, // Iridescent effect
         iridescenceIOR: 1.3,
         iridescenceThicknessRange: [100, 400]
     });
@@ -406,7 +406,7 @@ function updateBounceText4() {
 function animateGlassPanesIn() {
     glassPanes.forEach((pane, index) => {
         // Stagger delay: each pane starts after the previous one finishes
-        const delay = index * 300; // 300ms delay between each pane start
+        const delay = index * 3500; // 3500ms delay between each pane start
         
         setTimeout(() => {
             const startX = pane.position.x;
