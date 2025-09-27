@@ -99,29 +99,37 @@ function createGlassPanes() {
     // Create noise texture for static effect
     const noiseTexture = createNoiseTexture();
 
-    // Create glass material with iridescent effect and noise
-    const glassMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff, // Slight white tint for glass
-        transmission: 0.1, // Less transparent, more opaque
-        opacity: 0.8, // More visible
-        roughness: 0.05,
-        metalness: 0.1,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.02, // More glossy
-        transparent: true,
-        side: THREE.DoubleSide,
-        ior: 1.5, // Index of refraction for glass
-        thickness: paneDepth,
-        envMapIntensity: 1.5, // Enhanced reflections for glossy effect
-        iridescence: 3.0, // Iridescent effect
-        iridescenceIOR: 1.3,
-        iridescenceThicknessRange: [100, 400],
-        // Add noise texture as normal map for ripple effect
-        normalMap: noiseTexture,
-        normalScale: new THREE.Vector2(5.9, 5.9), // Control ripple intensity
-    });
+    // Define hover colors for each pane
+    const hoverColors = [
+        0x87CEEB, // Light blue for top pane
+        0x90EE90, // Light green for second pane
+        0xDDA0DD, // Plum/purple for third pane
+        0xFF6B6B  // Light red for bottom pane
+    ];
 
     for (let i = 0; i < 4; i++) {
+        // Create individual material for each pane to allow independent color changes
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff, // Default white tint for glass
+            transmission: 0.1, // Less transparent, more opaque
+            opacity: 0.8, // More visible
+            roughness: 0.05,
+            metalness: 0.1,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.02, // More glossy
+            transparent: true,
+            side: THREE.DoubleSide,
+            ior: 1.5, // Index of refraction for glass
+            thickness: paneDepth,
+            envMapIntensity: 1.5, // Enhanced reflections for glossy effect
+            iridescence: 3.0, // Iridescent effect
+            iridescenceIOR: 1.3,
+            iridescenceThicknessRange: [100, 400],
+            // Add noise texture as normal map for ripple effect
+            normalMap: noiseTexture,
+            normalScale: new THREE.Vector2(5.9, 5.9), // Control ripple intensity
+        });
+
         // Use BoxGeometry for 3D depth instead of PlaneGeometry
         const geometry = new THREE.BoxGeometry(paneWidth, paneHeight, paneDepth);
         const pane = new THREE.Mesh(geometry, glassMaterial);
@@ -142,7 +150,11 @@ function createGlassPanes() {
             targetScale: 1,
             originalY: originalY,
             noiseTexture: noiseTexture,
-            material: glassMaterial
+            material: glassMaterial,
+            originalColor: 0xffffff,
+            hoverColor: hoverColors[i],
+            currentColor: 0xffffff,
+            targetColor: 0xffffff
         };
         
         glassPanes.push(pane);
@@ -491,6 +503,16 @@ function animateGlassPanes() {
         userData.originalScale += (userData.targetScale - userData.originalScale) * scaleSpeed;
         pane.scale.set(userData.originalScale, userData.originalScale, userData.originalScale);
         
+        // Animate color changes
+        const colorSpeed = 0.1;
+        const currentColor = new THREE.Color(userData.currentColor);
+        const targetColor = new THREE.Color(userData.targetColor);
+        
+        // Lerp between current and target color
+        currentColor.lerp(targetColor, colorSpeed);
+        userData.currentColor = currentColor.getHex();
+        userData.material.color.setHex(userData.currentColor);
+        
         // Calculate position adjustments to make room for expanded pane
         let targetY = userData.originalY;
         
@@ -529,12 +551,14 @@ function updateGlassPaneHover() {
         // Reset previous hovered pane
         if (hoveredPane) {
             hoveredPane.userData.targetScale = 1;
+            hoveredPane.userData.targetColor = hoveredPane.userData.originalColor;
         }
         
         // Set new hovered pane
         hoveredPane = newHoveredPane;
         if (hoveredPane) {
             hoveredPane.userData.targetScale = 1.2; // 20% larger
+            hoveredPane.userData.targetColor = hoveredPane.userData.hoverColor;
         }
     }
 }
