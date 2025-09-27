@@ -406,7 +406,7 @@ function updateBounceText4() {
 function animateGlassPanesIn() {
     glassPanes.forEach((pane, index) => {
         // Stagger delay: each pane starts after the previous one finishes
-        const delay = index * 1000; // 1000ms delay between each pane start
+        const delay = index * 500; // 500ms delay between each pane start
         
         setTimeout(() => {
             const startX = pane.position.x;
