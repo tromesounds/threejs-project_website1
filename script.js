@@ -102,7 +102,7 @@ function createGlassPanes() {
     // Create glass material with iridescent effect and noise
     const glassMaterial = new THREE.MeshPhysicalMaterial({
         color: 0xffffff, // Slight white tint for glass
-        transmission: 0.6, // Less transparent, more opaque
+        transmission: 0.1, // Less transparent, more opaque
         opacity: 0.4, // More visible
         roughness: 0.05,
         metalness: 0.1,
