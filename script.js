@@ -30,9 +30,9 @@ const renderer = new THREE.WebGLRenderer({
     powerPreference: "high-performance" 
 });
 renderer.setSize(sizes.width, sizes.height);
-// More aggressive pixel ratio limiting for mobile
+// Smarter pixel ratio - use device pixel ratio but cap at 2 for performance
 const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
-renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(isMobile ? Math.min(window.devicePixelRatio, 1.5) : Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 renderer.setClearColor(0x87ceeb);
