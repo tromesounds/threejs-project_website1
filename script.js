@@ -78,7 +78,7 @@ function createGlassPanes() {
 
     // Create glass material with iridescent effect
     const glassMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xe6f3ff, // Slight blue tint for glass
+        color: 0xffffff, // Slight white tint for glass
         transmission: 0.6, // Less transparent, more opaque
         opacity: 0.4, // More visible
         roughness: 0.05,
@@ -406,7 +406,7 @@ function updateBounceText4() {
 function animateGlassPanesIn() {
     glassPanes.forEach((pane, index) => {
         // Stagger delay: each pane starts after the previous one finishes
-        const delay = index * 3500; // 3500ms delay between each pane start
+        const delay = index * 1000; // 1000ms delay between each pane start
         
         setTimeout(() => {
             const startX = pane.position.x;
