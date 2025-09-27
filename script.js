@@ -118,7 +118,7 @@ function createGlassPanes() {
         iridescenceThicknessRange: [100, 400],
         // Add noise texture as normal map for ripple effect
         normalMap: noiseTexture,
-        normalScale: new THREE.Vector2(5.9, 5.9), // Control ripple intensity
+        normalScale: new THREE.Vector2(0.3, 0.3), // Control ripple intensity
     });
 
     for (let i = 0; i < 4; i++) {
@@ -158,29 +158,69 @@ function createGlassPanes() {
     }, 1000); // Wait for panes to slide in
 }
 
-// Update noise texture for animated ripple effect
+// Update noise texture for animated ripple effect with mouse interaction
 function updateRippleEffect() {
     if (glassPanes.length === 0) return;
     
-    glassPanes.forEach(pane => {
+    glassPanes.forEach((pane, paneIndex) => {
         const texture = pane.userData.noiseTexture;
         if (texture) {
-            // Animate the texture offset for flowing ripple effect
-            texture.offset.x += 0.001;
-            texture.offset.y += 0.0005;
+            // Mouse-influenced animation speed and direction
+            const mouseInfluenceX = mouse.x * 0.002; // Convert mouse position to texture offset
+            const mouseInfluenceY = mouse.y * 0.002;
             
-            // Occasionally regenerate noise for TV static effect
-            if (Math.random() < 0.05) { // 5% chance per frame
+            // Animate the texture offset for flowing ripple effect influenced by mouse
+            texture.offset.x += 0.001 + mouseInfluenceX;
+            texture.offset.y += 0.0005 + mouseInfluenceY;
+            
+            // Mouse-reactive ripple intensity
+            const distanceFromCenter = Math.sqrt(mouse.x * mouse.x + mouse.y * mouse.y);
+            const mouseIntensity = Math.max(0.1, 1 - distanceFromCenter * 0.5); // Closer mouse = stronger ripples
+            
+            // Update normal scale based on mouse proximity
+            pane.material.normalScale.set(
+                0.3 * mouseIntensity,
+                0.3 * mouseIntensity
+            );
+            
+            // Create ripples radiating from mouse position
+            if (Math.random() < 0.02) { // Less frequent but mouse-reactive updates
                 const size = 256;
                 const data = texture.image.data;
                 
-                // Update random portions of the texture
-                for (let i = 0; i < 1000; i++) { // Update 1000 random pixels
+                // Convert mouse coordinates to texture coordinates
+                const mouseTexX = Math.floor((mouse.x + 1) * 0.5 * size);
+                const mouseTexY = Math.floor((mouse.y + 1) * 0.5 * size);
+                
+                // Create ripple pattern around mouse position
+                const rippleRadius = 30;
+                const rippleStrength = mouseIntensity * 2;
+                
+                for (let x = -rippleRadius; x <= rippleRadius; x++) {
+                    for (let y = -rippleRadius; y <= rippleRadius; y++) {
+                        const texX = (mouseTexX + x + size) % size;
+                        const texY = (mouseTexY + y + size) % size;
+                        const distance = Math.sqrt(x * x + y * y);
+                        
+                        if (distance <= rippleRadius) {
+                            const pixelIndex = (texY * size + texX) * 4;
+                            const rippleValue = Math.cos(distance * 0.3) * rippleStrength * (1 - distance / rippleRadius);
+                            const noise = Math.max(0, Math.min(1, 0.5 + rippleValue + Math.random() * 0.2));
+                            
+                            data[pixelIndex] = noise * 255;     // R
+                            data[pixelIndex + 1] = noise * 255; // G  
+                            data[pixelIndex + 2] = noise * 255; // B
+                        }
+                    }
+                }
+                
+                // Also add some random static for TV effect
+                for (let i = 0; i < 500; i++) {
                     const pixelIndex = Math.floor(Math.random() * size * size) * 4;
                     const noise = Math.random();
-                    data[pixelIndex] = noise * 255;     // R
-                    data[pixelIndex + 1] = noise * 255; // G
-                    data[pixelIndex + 2] = noise * 255; // B
+                    data[pixelIndex] = noise * 255;
+                    data[pixelIndex + 1] = noise * 255;
+                    data[pixelIndex + 2] = noise * 255;
                 }
                 
                 texture.needsUpdate = true;
