@@ -103,7 +103,7 @@ function createGlassPanes() {
     const glassMaterial = new THREE.MeshPhysicalMaterial({
         color: 0xffffff, // Slight white tint for glass
         transmission: 0.1, // Less transparent, more opaque
-        opacity: 0.4, // More visible
+        opacity: 0.8, // More visible
         roughness: 0.05,
         metalness: 0.1,
         clearcoat: 1.0,
