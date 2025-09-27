@@ -118,7 +118,7 @@ function createGlassPanes() {
         iridescenceThicknessRange: [100, 400],
         // Add noise texture as normal map for ripple effect
         normalMap: noiseTexture,
-        normalScale: new THREE.Vector2(3.9, 3.9), // Control ripple intensity
+        normalScale: new THREE.Vector2(5.9, 5.9), // Control ripple intensity
     });
 
     for (let i = 0; i < 4; i++) {
