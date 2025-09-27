@@ -66,7 +66,27 @@ let bounceVelocity2 = { x: -0.025, y: 0.018 }; // Bounce speed for second text
 let bounceVelocity3 = { x: 0.018, y: -0.022 }; // Bounce speed for third text
 let bounceVelocity4 = { x: -0.015, y: -0.025 }; // Bounce speed for fourth text
 
-// Create Glass Panes
+// Create noise texture for static effect
+function createNoiseTexture() {
+    const size = 256;
+    const data = new Uint8Array(size * size * 4);
+    
+    for (let i = 0; i < size * size * 4; i += 4) {
+        const noise = Math.random();
+        data[i] = noise * 255;     // R
+        data[i + 1] = noise * 255; // G
+        data[i + 2] = noise * 255; // B
+        data[i + 3] = 100;         // A (transparency)
+    }
+    
+    const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+    texture.needsUpdate = true;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    return texture;
+}
+
+// Create Glass Panes with ripple effect
 function createGlassPanes() {
     const aspect = 16 / 9;
     const paneWidth = 2.5;
@@ -76,7 +96,10 @@ function createGlassPanes() {
     const totalHeight = (paneHeight * 4) + (spacing * 3);
     const startY = totalHeight / 2 - paneHeight / 2;
 
-    // Create glass material with iridescent effect
+    // Create noise texture for static effect
+    const noiseTexture = createNoiseTexture();
+
+    // Create glass material with iridescent effect and noise
     const glassMaterial = new THREE.MeshPhysicalMaterial({
         color: 0xffffff, // Slight white tint for glass
         transmission: 0.6, // Less transparent, more opaque
@@ -92,7 +115,10 @@ function createGlassPanes() {
         envMapIntensity: 1.5, // Enhanced reflections for glossy effect
         iridescence: 3.0, // Iridescent effect
         iridescenceIOR: 1.3,
-        iridescenceThicknessRange: [100, 400]
+        iridescenceThicknessRange: [100, 400],
+        // Add noise texture as normal map for ripple effect
+        normalMap: noiseTexture,
+        normalScale: new THREE.Vector2(0.3, 0.3), // Control ripple intensity
     });
 
     for (let i = 0; i < 4; i++) {
@@ -109,12 +135,14 @@ function createGlassPanes() {
         const originalY = startY - (i * (paneHeight + spacing));
         originalPositions.push({ x: 0, y: originalY, z: 0 });
         
-        // Add hover properties
+        // Add hover properties and material reference for animation
         pane.userData = { 
             index: i, 
             originalScale: 1, 
             targetScale: 1,
-            originalY: originalY
+            originalY: originalY,
+            noiseTexture: noiseTexture,
+            material: glassMaterial
         };
         
         glassPanes.push(pane);
@@ -128,6 +156,37 @@ function createGlassPanes() {
         createBounceText3();
         createBounceText4();
     }, 1000); // Wait for panes to slide in
+}
+
+// Update noise texture for animated ripple effect
+function updateRippleEffect() {
+    if (glassPanes.length === 0) return;
+    
+    glassPanes.forEach(pane => {
+        const texture = pane.userData.noiseTexture;
+        if (texture) {
+            // Animate the texture offset for flowing ripple effect
+            texture.offset.x += 0.001;
+            texture.offset.y += 0.0005;
+            
+            // Occasionally regenerate noise for TV static effect
+            if (Math.random() < 0.05) { // 5% chance per frame
+                const size = 256;
+                const data = texture.image.data;
+                
+                // Update random portions of the texture
+                for (let i = 0; i < 1000; i++) { // Update 1000 random pixels
+                    const pixelIndex = Math.floor(Math.random() * size * size) * 4;
+                    const noise = Math.random();
+                    data[pixelIndex] = noise * 255;     // R
+                    data[pixelIndex + 1] = noise * 255; // G
+                    data[pixelIndex + 2] = noise * 255; // B
+                }
+                
+                texture.needsUpdate = true;
+            }
+        }
+    });
 }
 
 // Create Bouncing Text inside the first glass pane
@@ -295,9 +354,6 @@ function updateBounceText() {
         bounceVelocity.y *= -0.3;
         bounceText.position.y = Math.max(minY, Math.min(maxY, bounceText.position.y));
     }
-    
-    // Add slight rotation for visual interest
-    //bounceText.rotation.z += 0.01;
 }
 
 // Update second bouncing text animation
@@ -329,9 +385,6 @@ function updateBounceText2() {
         bounceVelocity2.y *= -0.3;
         bounceText2.position.y = Math.max(minY, Math.min(maxY, bounceText2.position.y));
     }
-    
-    // Add slight rotation for visual interest
-    //bounceText2.rotation.z += 0.01;
 }
 
 // Update third bouncing text animation
@@ -363,9 +416,6 @@ function updateBounceText3() {
         bounceVelocity3.y *= -0.3;
         bounceText3.position.y = Math.max(minY, Math.min(maxY, bounceText3.position.y));
     }
-    
-    // Add slight rotation for visual interest
-    //bounceText3.rotation.z += 0.01;
 }
 
 // Update fourth bouncing text animation
@@ -397,9 +447,6 @@ function updateBounceText4() {
         bounceVelocity4.y *= -0.3;
         bounceText4.position.y = Math.max(minY, Math.min(maxY, bounceText4.position.y));
     }
-    
-    // Add slight rotation for visual interest
-    //bounceText4.rotation.z += 0.01;
 }
 
 // Animate Glass Panes In
@@ -643,6 +690,9 @@ function animate() {
     if (glassPanes.length > 0) {
         animateGlassPanes();
     }
+    
+    // Update ripple effect on glass panes
+    updateRippleEffect();
     
     // Update bouncing text
     updateBounceText();
