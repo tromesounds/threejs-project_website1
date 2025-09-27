@@ -21,12 +21,18 @@ const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 
 camera.position.set(0, 0, 5);
 scene.add(camera);
 
-// Renderer
+// Renderer with mobile-specific settings
 const canvas = document.querySelector('canvas.webgl');
 if (!canvas) console.error('WebGL canvas not found!');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ 
+    canvas, 
+    antialias: window.innerWidth > 768, // Disable antialiasing on mobile
+    powerPreference: "high-performance" 
+});
 renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// More aggressive pixel ratio limiting for mobile
+const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
+renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 renderer.setClearColor(0x87ceeb);
@@ -90,7 +96,7 @@ function createNoiseTexture() {
     return texture;
 }
 
-// Create Glass Panes with ripple effect
+// Create Glass Panes with ripple effect (mobile-optimized materials)
 function createGlassPanes() {
     const aspect = 16 / 9;
     const paneWidth = 2.5;
@@ -100,8 +106,9 @@ function createGlassPanes() {
     const totalHeight = (paneHeight * 4) + (spacing * 3);
     const startY = totalHeight / 2 - paneHeight / 2;
 
-    // Create noise texture for static effect
-    const noiseTexture = createNoiseTexture();
+    // Create noise texture for static effect (smaller on mobile)
+    const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
+    const noiseTexture = isMobile ? null : createNoiseTexture(); // Disable noise on mobile
 
     // Define hover colors for each pane
     const hoverColors = [
@@ -112,27 +119,36 @@ function createGlassPanes() {
     ];
 
     for (let i = 0; i < 4; i++) {
-        // Create individual material for each pane to allow independent color changes
-        const glassMaterial = new THREE.MeshPhysicalMaterial({
-            color: 0xffffff, // Default white tint for glass
-            transmission: 0.1, // Less transparent, more opaque
-            opacity: 0.8, // More visible
-            roughness: 0.05,
-            metalness: 0.1,
-            clearcoat: 1.0,
-            clearcoatRoughness: 0.02, // More glossy
-            transparent: true,
-            side: THREE.DoubleSide,
-            ior: 1.5, // Index of refraction for glass
-            thickness: paneDepth,
-            envMapIntensity: 1.5, // Enhanced reflections for glossy effect
-            iridescence: 3.0, // Iridescent effect
-            iridescenceIOR: 1.3,
-            iridescenceThicknessRange: [100, 400],
-            // Add noise texture as normal map for ripple effect
-            normalMap: noiseTexture,
-            normalScale: new THREE.Vector2(5.9, 5.9), // Control ripple intensity
-        });
+        // Create simplified material for mobile, complex for desktop
+        const glassMaterial = isMobile ? 
+            // Simplified mobile material
+            new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.7,
+                roughness: 0.1,
+                metalness: 0.1,
+            }) :
+            // Full desktop material
+            new THREE.MeshPhysicalMaterial({
+                color: 0xffffff,
+                transmission: 0.1,
+                opacity: 0.8,
+                roughness: 0.05,
+                metalness: 0.1,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.02,
+                transparent: true,
+                side: THREE.DoubleSide,
+                ior: 1.5,
+                thickness: paneDepth,
+                envMapIntensity: 1.5,
+                iridescence: 3.0,
+                iridescenceIOR: 1.3,
+                iridescenceThicknessRange: [100, 400],
+                normalMap: noiseTexture,
+                normalScale: new THREE.Vector2(5.9, 5.9),
+            });
 
         // Use BoxGeometry for 3D depth instead of PlaneGeometry
         const geometry = new THREE.BoxGeometry(paneWidth, paneHeight, paneDepth);
@@ -174,30 +190,25 @@ function createGlassPanes() {
     }, 1000); // Wait for panes to slide in
 }
 
-// Update noise texture for animated ripple effect (with mobile optimization)
+// Update noise texture for animated ripple effect (desktop only)
 function updateRippleEffect() {
-    if (glassPanes.length === 0) return;
-    
-    // Reduce update frequency on mobile
     const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
-    const updateChance = isMobile ? 0.02 : 0.05; // Reduce from 5% to 2% on mobile
+    if (glassPanes.length === 0 || isMobile) return; // Skip entirely on mobile
     
     glassPanes.forEach(pane => {
         const texture = pane.userData.noiseTexture;
         if (texture) {
-            // Animate the texture offset for flowing ripple effect (slower on mobile)
-            const offsetSpeed = isMobile ? 0.0005 : 0.001;
-            texture.offset.x += offsetSpeed;
-            texture.offset.y += offsetSpeed * 0.5;
+            // Animate the texture offset for flowing ripple effect
+            texture.offset.x += 0.001;
+            texture.offset.y += 0.0005;
             
             // Occasionally regenerate noise for TV static effect
-            if (Math.random() < updateChance) {
+            if (Math.random() < 0.05) {
                 const size = 256;
                 const data = texture.image.data;
                 
-                // Update fewer random pixels on mobile
-                const pixelsToUpdate = isMobile ? 500 : 1000;
-                for (let i = 0; i < pixelsToUpdate; i++) {
+                // Update random portions of the texture
+                for (let i = 0; i < 1000; i++) {
                     const pixelIndex = Math.floor(Math.random() * size * size) * 4;
                     const noise = Math.random();
                     data[pixelIndex] = noise * 255;     // R
