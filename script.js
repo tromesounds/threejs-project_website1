@@ -21,12 +21,18 @@ const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 
 camera.position.set(0, 0, 5);
 scene.add(camera);
 
-// Renderer
+// Renderer with mobile-specific settings
 const canvas = document.querySelector('canvas.webgl');
 if (!canvas) console.error('WebGL canvas not found!');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ 
+    canvas, 
+    antialias: window.innerWidth > 768, // Disable antialiasing on mobile
+    powerPreference: "high-performance" 
+});
 renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Smarter pixel ratio - use device pixel ratio but cap at 2 for performance
+const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
+renderer.setPixelRatio(isMobile ? Math.min(window.devicePixelRatio, 1.5) : Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 renderer.setClearColor(0x87ceeb);
@@ -45,11 +51,15 @@ hdrLoader.load(hdrPath, (texture) => {
     scene.background = new THREE.Color(0x87ceeb);
 });
 
-// Spinning Background
+// Spinning Background (with mobile optimization)
 let rotation = 0;
 function spinBackground() {
-    rotation += 0.001;
-    scene.backgroundRotation.y = rotation;
+    const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
+    const rotationSpeed = isMobile ? 0.0005 : 0.001; // Slower on mobile
+    rotation += rotationSpeed;
+    if (scene.backgroundRotation) {
+        scene.backgroundRotation.y = rotation;
+    }
 }
 
 // Glass Panes Variables
@@ -86,7 +96,7 @@ function createNoiseTexture() {
     return texture;
 }
 
-// Create Glass Panes with ripple effect
+// Create Glass Panes with ripple effect (mobile-optimized materials)
 function createGlassPanes() {
     const aspect = 16 / 9;
     const paneWidth = 2.5;
@@ -96,32 +106,50 @@ function createGlassPanes() {
     const totalHeight = (paneHeight * 4) + (spacing * 3);
     const startY = totalHeight / 2 - paneHeight / 2;
 
-    // Create noise texture for static effect
-    const noiseTexture = createNoiseTexture();
+    // Create noise texture for static effect (smaller on mobile)
+    const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
+    const noiseTexture = isMobile ? null : createNoiseTexture(); // Disable noise on mobile
 
-    // Create glass material with iridescent effect and noise
-    const glassMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff, // Slight white tint for glass
-        transmission: 0.6, // Less transparent, more opaque
-        opacity: 0.4, // More visible
-        roughness: 0.05,
-        metalness: 0.1,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.02, // More glossy
-        transparent: true,
-        side: THREE.DoubleSide,
-        ior: 1.5, // Index of refraction for glass
-        thickness: paneDepth,
-        envMapIntensity: 1.5, // Enhanced reflections for glossy effect
-        iridescence: 3.0, // Iridescent effect
-        iridescenceIOR: 1.3,
-        iridescenceThicknessRange: [100, 400],
-        // Add noise texture as normal map for ripple effect
-        normalMap: noiseTexture,
-        normalScale: new THREE.Vector2(0.3, 0.3), // Control ripple intensity
-    });
+    // Define hover colors for each pane
+    const hoverColors = [
+        0x87CEEB, // Light blue for top pane
+        0x90EE90, // Light green for second pane
+        0xDDA0DD, // Plum/purple for third pane
+        0xFF6B6B  // Light red for bottom pane
+    ];
 
     for (let i = 0; i < 4; i++) {
+        // Create simplified material for mobile, complex for desktop
+        const glassMaterial = isMobile ? 
+            // Simplified mobile material
+            new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.7,
+                roughness: 0.1,
+                metalness: 0.1,
+            }) :
+            // Full desktop material
+            new THREE.MeshPhysicalMaterial({
+                color: 0xffffff,
+                transmission: 0.1,
+                opacity: 0.8,
+                roughness: 0.05,
+                metalness: 0.1,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.02,
+                transparent: true,
+                side: THREE.DoubleSide,
+                ior: 1.5,
+                thickness: paneDepth,
+                envMapIntensity: 1.5,
+                iridescence: 3.0,
+                iridescenceIOR: 1.3,
+                iridescenceThicknessRange: [100, 400],
+                normalMap: noiseTexture,
+                normalScale: new THREE.Vector2(5.9, 5.9),
+            });
+
         // Use BoxGeometry for 3D depth instead of PlaneGeometry
         const geometry = new THREE.BoxGeometry(paneWidth, paneHeight, paneDepth);
         const pane = new THREE.Mesh(geometry, glassMaterial);
@@ -146,7 +174,11 @@ function createGlassPanes() {
             targetScale: 1,
             originalY: originalY,
             noiseTexture: noiseTexture,
-            material: glassMaterial
+            material: glassMaterial,
+            originalColor: new THREE.Color(0xffffff), // Use THREE.Color object
+            hoverColor: new THREE.Color(hoverColors[i]), // Use THREE.Color object
+            currentColor: new THREE.Color(0xffffff), // Use THREE.Color object
+            targetColor: new THREE.Color(0xffffff) // Use THREE.Color object
         };
         
         glassPanes.push(pane);
@@ -203,74 +235,77 @@ function animateBounceTextIn() {
     });
 }
 
-// Update noise texture for animated ripple effect with mouse interaction
+// Update noise texture for animated ripple effect (desktop only)
 function updateRippleEffect() {
-    if (glassPanes.length === 0) return;
+    const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
+    if (glassPanes.length === 0 || isMobile) return; // Skip entirely on mobile
     
-    glassPanes.forEach((pane, paneIndex) => {
+    glassPanes.forEach(pane => {
         const texture = pane.userData.noiseTexture;
         if (texture) {
-            // Mouse-influenced animation speed and direction
-            const mouseInfluenceX = mouse.x * 0.002; // Convert mouse position to texture offset
-            const mouseInfluenceY = mouse.y * 0.002;
+            // Animate the texture offset for flowing ripple effect
+            texture.offset.x += 0.001;
+            texture.offset.y += 0.0005;
             
-            // Animate the texture offset for flowing ripple effect influenced by mouse
-            texture.offset.x += 0.001 + mouseInfluenceX;
-            texture.offset.y += 0.0005 + mouseInfluenceY;
-            
-            // Mouse-reactive ripple intensity
-            const distanceFromCenter = Math.sqrt(mouse.x * mouse.x + mouse.y * mouse.y);
-            const mouseIntensity = Math.max(0.1, 1 - distanceFromCenter * 0.5); // Closer mouse = stronger ripples
-            
-            // Update normal scale based on mouse proximity
-            pane.material.normalScale.set(
-                0.3 * mouseIntensity,
-                0.3 * mouseIntensity
-            );
-            
-            // Create ripples radiating from mouse position
-            if (Math.random() < 0.02) { // Less frequent but mouse-reactive updates
+            // Occasionally regenerate noise for TV static effect
+            if (Math.random() < 0.05) {
                 const size = 256;
                 const data = texture.image.data;
                 
-                // Convert mouse coordinates to texture coordinates
-                const mouseTexX = Math.floor((mouse.x + 1) * 0.5 * size);
-                const mouseTexY = Math.floor((mouse.y + 1) * 0.5 * size);
-                
-                // Create ripple pattern around mouse position
-                const rippleRadius = 30;
-                const rippleStrength = mouseIntensity * 2;
-                
-                for (let x = -rippleRadius; x <= rippleRadius; x++) {
-                    for (let y = -rippleRadius; y <= rippleRadius; y++) {
-                        const texX = (mouseTexX + x + size) % size;
-                        const texY = (mouseTexY + y + size) % size;
-                        const distance = Math.sqrt(x * x + y * y);
-                        
-                        if (distance <= rippleRadius) {
-                            const pixelIndex = (texY * size + texX) * 4;
-                            const rippleValue = Math.cos(distance * 0.3) * rippleStrength * (1 - distance / rippleRadius);
-                            const noise = Math.max(0, Math.min(1, 0.5 + rippleValue + Math.random() * 0.2));
-                            
-                            data[pixelIndex] = noise * 255;     // R
-                            data[pixelIndex + 1] = noise * 255; // G  
-                            data[pixelIndex + 2] = noise * 255; // B
-                        }
-                    }
-                }
-                
-                // Also add some random static for TV effect
-                for (let i = 0; i < 500; i++) {
+                // Update random portions of the texture
+                for (let i = 0; i < 1000; i++) {
                     const pixelIndex = Math.floor(Math.random() * size * size) * 4;
                     const noise = Math.random();
-                    data[pixelIndex] = noise * 255;
-                    data[pixelIndex + 1] = noise * 255;
-                    data[pixelIndex + 2] = noise * 255;
+                    data[pixelIndex] = noise * 255;     // R
+                    data[pixelIndex + 1] = noise * 255; // G
+                    data[pixelIndex + 2] = noise * 255; // B
                 }
                 
                 texture.needsUpdate = true;
             }
         }
+    });
+}
+
+// Animate Glass Panes In with fade effect
+function animateGlassPanesIn() {
+    glassPanes.forEach((pane, index) => {
+        // Stagger delay for fade-in effect
+        const delay = index * 200; // 200ms delay between each pane start
+        
+        setTimeout(() => {
+            // Make pane visible
+            pane.visible = true;
+            
+            const duration = 1000; // 1 second for fade in
+            const startTime = Date.now();
+            const targetOpacity = window.innerWidth < 768 || 'ontouchstart' in window ? 0.7 : 0.8; // Match material opacity
+            
+            function animatePane() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Smooth easing function
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                
+                // Fade in opacity
+                pane.material.opacity = targetOpacity * easeOutQuart;
+                
+                // Optional: slight scale animation for extra effect
+                const scale = 0.5 + (0.5 * easeOutQuart); // Start at 50% scale, grow to 100%
+                pane.scale.set(scale, scale, scale);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animatePane);
+                } else {
+                    // Reset scale to normal for hover effects to work properly
+                    pane.scale.set(1, 1, 1);
+                    pane.userData.originalScale = 1;
+                }
+            }
+            
+            animatePane();
+        }, delay);
     });
 }
 
@@ -546,48 +581,6 @@ function updateBounceText4() {
     }
 }
 
-// Animate Glass Panes In with fade effect
-function animateGlassPanesIn() {
-    glassPanes.forEach((pane, index) => {
-        // Stagger delay for fade-in effect
-        const delay = index * 200; // 200ms delay between each pane start
-        
-        setTimeout(() => {
-            // Make pane visible
-            pane.visible = true;
-            
-            const duration = 1000; // 1 second for fade in
-            const startTime = Date.now();
-            const targetOpacity = window.innerWidth < 768 || 'ontouchstart' in window ? 0.7 : 0.8; // Match material opacity
-            
-            function animatePane() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                
-                // Smooth easing function
-                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-                
-                // Fade in opacity
-                pane.material.opacity = targetOpacity * easeOutQuart;
-                
-                // Optional: slight scale animation for extra effect
-                const scale = 0.5 + (0.5 * easeOutQuart); // Start at 50% scale, grow to 100%
-                pane.scale.set(scale, scale, scale);
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animatePane);
-                } else {
-                    // Reset scale to normal for hover effects to work properly
-                    pane.scale.set(1, 1, 1);
-                    pane.userData.originalScale = 1;
-                }
-            }
-            
-            animatePane();
-        }, delay);
-    });
-}
-
 // Animate Glass Panes for hover effects
 function animateGlassPanes() {
     glassPanes.forEach((pane, index) => {
@@ -599,11 +592,9 @@ function animateGlassPanes() {
         userData.originalScale += (userData.targetScale - userData.originalScale) * scaleSpeed;
         pane.scale.set(userData.originalScale, userData.originalScale, userData.originalScale);
         
-        // Animate color transition
-        const colorSpeed = 0.05;
-        const targetColor = isHovered ? userData.hoverColor : userData.originalColor;
-        
-        userData.currentColor.lerp(targetColor, colorSpeed);
+        // Animate color changes using THREE.Color.lerp()
+        const colorSpeed = 0.1;
+        userData.currentColor.lerp(userData.targetColor, colorSpeed);
         pane.material.color.copy(userData.currentColor);
         
         // Calculate position adjustments to make room for expanded pane
@@ -644,12 +635,14 @@ function updateGlassPaneHover() {
         // Reset previous hovered pane
         if (hoveredPane) {
             hoveredPane.userData.targetScale = 1;
+            hoveredPane.userData.targetColor = hoveredPane.userData.originalColor;
         }
         
         // Set new hovered pane
         hoveredPane = newHoveredPane;
         if (hoveredPane) {
             hoveredPane.userData.targetScale = 1.2; // 20% larger
+            hoveredPane.userData.targetColor = hoveredPane.userData.hoverColor;
         }
     }
 }
@@ -781,18 +774,27 @@ window.addEventListener('click', handleInteraction);
 window.addEventListener('touchend', handleInteraction);
 window.addEventListener('touchstart', handleInteraction);
 
-// Resize Handler
+// Resize Handler with debouncing and mobile optimization
+let resizeTimeout;
 window.addEventListener('resize', () => {
-    sizes.width = window.innerWidth;
-    sizes.height = window.innerHeight;
-    camera.aspect = sizes.width / sizes.height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(sizes.width, sizes.height);
-    
-    // Only recreate text if we haven't transitioned yet
-    if (font && !isTransitioning && (!textMesh || textMesh.visible)) {
-        createTextGeometry();
-    }
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        sizes.width = window.innerWidth;
+        sizes.height = window.innerHeight;
+        camera.aspect = sizes.width / sizes.height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(sizes.width, sizes.height);
+        
+        // Force garbage collection on mobile after resize
+        if (renderer.info.memory) {
+            renderer.renderLists.dispose();
+        }
+        
+        // Only recreate text if we haven't transitioned yet
+        if (font && !isTransitioning && (!textMesh || textMesh.visible)) {
+            createTextGeometry();
+        }
+    }, 100); // Debounce resize events
 });
 
 // Animation Loop
