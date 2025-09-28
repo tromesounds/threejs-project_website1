@@ -154,14 +154,10 @@ function createGlassPanes() {
         const geometry = new THREE.BoxGeometry(paneWidth, paneHeight, paneDepth);
         const pane = new THREE.Mesh(geometry, glassMaterial);
         
-        // Position panes at their final position (not off-screen)
-        pane.position.x = 0; // Final position instead of 10
+        // Position panes
+        pane.position.x = 10; // Start off-screen to the right
         pane.position.y = startY - (i * (paneHeight + spacing));
         pane.position.z = 0;
-        
-        // Start invisible for fade-in effect
-        pane.material.opacity = 0;
-        pane.visible = false;
         
         // Store original position for hover effects
         const originalY = startY - (i * (paneHeight + spacing));
@@ -175,10 +171,10 @@ function createGlassPanes() {
             originalY: originalY,
             noiseTexture: noiseTexture,
             material: glassMaterial,
-            originalColor: new THREE.Color(0xffffff), // Use THREE.Color object
-            hoverColor: new THREE.Color(hoverColors[i]), // Use THREE.Color object
-            currentColor: new THREE.Color(0xffffff), // Use THREE.Color object
-            targetColor: new THREE.Color(0xffffff) // Use THREE.Color object
+            originalColor: 0xffffff,
+            hoverColor: hoverColors[i],
+            currentColor: 0xffffff,
+            targetColor: 0xffffff
         };
         
         glassPanes.push(pane);
@@ -191,48 +187,7 @@ function createGlassPanes() {
         createBounceText2();
         createBounceText3();
         createBounceText4();
-        
-        // Start bouncing text fade-in after panes finish fading
-        setTimeout(() => {
-            animateBounceTextIn();
-        }, 1000); // Wait for panes to mostly fade in
     }, 1000); // Wait for panes to slide in
-}
-
-// Animate bouncing text fade-in
-function animateBounceTextIn() {
-    const bounceTexts = [bounceText, bounceText2, bounceText3, bounceText4];
-    
-    bounceTexts.forEach((text, index) => {
-        if (!text) return;
-        
-        // Stagger the text fade-in
-        const delay = index * 150; // 150ms between each text
-        
-        setTimeout(() => {
-            text.visible = true;
-            
-            const duration = 800; // 0.8 seconds for fade in
-            const startTime = Date.now();
-            
-            function animateText() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                
-                // Smooth easing
-                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-                
-                // Fade in opacity
-                text.material.opacity = 1 * easeOutQuart;
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animateText);
-                }
-            }
-            
-            animateText();
-        }, delay);
-    });
 }
 
 // Update noise texture for animated ripple effect (desktop only)
@@ -267,48 +222,6 @@ function updateRippleEffect() {
     });
 }
 
-// Animate Glass Panes In with fade effect
-function animateGlassPanesIn() {
-    glassPanes.forEach((pane, index) => {
-        // Stagger delay for fade-in effect
-        const delay = index * 200; // 200ms delay between each pane start
-        
-        setTimeout(() => {
-            // Make pane visible
-            pane.visible = true;
-            
-            const duration = 1000; // 1 second for fade in
-            const startTime = Date.now();
-            const targetOpacity = window.innerWidth < 768 || 'ontouchstart' in window ? 0.7 : 0.8; // Match material opacity
-            
-            function animatePane() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                
-                // Smooth easing function
-                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-                
-                // Fade in opacity
-                pane.material.opacity = targetOpacity * easeOutQuart;
-                
-                // Optional: slight scale animation for extra effect
-                const scale = 0.5 + (0.5 * easeOutQuart); // Start at 50% scale, grow to 100%
-                pane.scale.set(scale, scale, scale);
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animatePane);
-                } else {
-                    // Reset scale to normal for hover effects to work properly
-                    pane.scale.set(1, 1, 1);
-                    pane.userData.originalScale = 1;
-                }
-            }
-            
-            animatePane();
-        }, delay);
-    });
-}
-
 // Create Bouncing Text inside the first glass pane
 function createBounceText() {
     if (!font || glassPanes.length === 0) return;
@@ -329,9 +242,7 @@ function createBounceText() {
         color: 0xe6f3ff,
         metalness: 0.6,
         roughness: 0.3,
-        emissive: 0x001122,
-        transparent: true,
-        opacity: 0 // Start invisible
+        emissive: 0x001122
     });
     
     bounceText = new THREE.Mesh(textGeometry, textMaterial);
@@ -341,7 +252,6 @@ function createBounceText() {
     const firstPane = glassPanes[0];
     bounceText.position.copy(firstPane.position);
     bounceText.position.z = 0.1; // Slightly in front of the pane
-    bounceText.visible = false; // Start invisible
     
     scene.add(bounceText);
 }
@@ -366,9 +276,7 @@ function createBounceText2() {
         color: 0xe6f3ff,
         metalness: 0.6,
         roughness: 0.3,
-        emissive: 0x001122,
-        transparent: true,
-        opacity: 0 // Start invisible
+        emissive: 0x001122
     });
     
     bounceText2 = new THREE.Mesh(textGeometry, textMaterial);
@@ -378,7 +286,6 @@ function createBounceText2() {
     const secondPane = glassPanes[1];
     bounceText2.position.copy(secondPane.position);
     bounceText2.position.z = 0.1; // Slightly in front of the pane
-    bounceText2.visible = false; // Start invisible
     
     scene.add(bounceText2);
 }
@@ -403,9 +310,7 @@ function createBounceText3() {
         color: 0xe6f3ff,
         metalness: 0.6,
         roughness: 0.3,
-        emissive: 0x001122,
-        transparent: true,
-        opacity: 0 // Start invisible
+        emissive: 0x001122
     });
     
     bounceText3 = new THREE.Mesh(textGeometry, textMaterial);
@@ -415,7 +320,6 @@ function createBounceText3() {
     const thirdPane = glassPanes[2];
     bounceText3.position.copy(thirdPane.position);
     bounceText3.position.z = 0.1; // Slightly in front of the pane
-    bounceText3.visible = false; // Start invisible
     
     scene.add(bounceText3);
 }
@@ -440,9 +344,7 @@ function createBounceText4() {
         color: 0xe6f3ff,
         metalness: 0.6,
         roughness: 0.3,
-        emissive: 0x001122,
-        transparent: true,
-        opacity: 0 // Start invisible
+        emissive: 0x001122
     });
     
     bounceText4 = new THREE.Mesh(textGeometry, textMaterial);
@@ -452,7 +354,6 @@ function createBounceText4() {
     const fourthPane = glassPanes[3];
     bounceText4.position.copy(fourthPane.position);
     bounceText4.position.z = 0.1; // Slightly in front of the pane
-    bounceText4.visible = false; // Start invisible
     
     scene.add(bounceText4);
 }
@@ -581,6 +482,37 @@ function updateBounceText4() {
     }
 }
 
+// Animate Glass Panes In
+function animateGlassPanesIn() {
+    glassPanes.forEach((pane, index) => {
+        // Stagger delay: each pane starts after the previous one finishes
+        const delay = index * 500; // 500ms delay between each pane start
+        
+        setTimeout(() => {
+            const startX = pane.position.x;
+            const targetX = 0;
+            const duration = 800; // Slightly faster individual animation
+            const startTime = Date.now();
+            
+            function animatePane() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Smoother easing function
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                
+                pane.position.x = startX + (targetX - startX) * easeOutQuart;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animatePane);
+                }
+            }
+            
+            animatePane();
+        }, delay);
+    });
+}
+
 // Animate Glass Panes for hover effects
 function animateGlassPanes() {
     glassPanes.forEach((pane, index) => {
@@ -592,10 +524,15 @@ function animateGlassPanes() {
         userData.originalScale += (userData.targetScale - userData.originalScale) * scaleSpeed;
         pane.scale.set(userData.originalScale, userData.originalScale, userData.originalScale);
         
-        // Animate color changes using THREE.Color.lerp()
+        // Animate color changes
         const colorSpeed = 0.1;
-        userData.currentColor.lerp(userData.targetColor, colorSpeed);
-        pane.material.color.copy(userData.currentColor);
+        const currentColor = new THREE.Color(userData.currentColor);
+        const targetColor = new THREE.Color(userData.targetColor);
+        
+        // Lerp between current and target color
+        currentColor.lerp(targetColor, colorSpeed);
+        userData.currentColor = currentColor.getHex();
+        userData.material.color.setHex(userData.currentColor);
         
         // Calculate position adjustments to make room for expanded pane
         let targetY = userData.originalY;
@@ -764,6 +701,11 @@ function handleInteraction(event) {
             // Start glass panes animation after a short delay
             setTimeout(() => {
                 animateGlassPanesIn();
+                
+                // Start bounce text animation after panes finish fading in
+                setTimeout(() => {
+                    animateBounceTextIn();
+                }, 1200); // Wait for panes to finish fading in
             }, 300);
         }
     }
