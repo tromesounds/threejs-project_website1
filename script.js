@@ -1,154 +1,2343 @@
 import * as THREE from 'three';
-import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
-// Scene
+
+//V2.2 HDR
+
+// ============================================
+// CONFIGURATION
+// ============================================
+const CONFIG = {
+    sections: [
+        { id: 'dev', label: 'DEV' },
+        { id: 'design', label: 'DESIGN' },
+        { id: 'omega33', label: 'OMEGA33' },
+        { id: 'wyzard33', label: 'WYZARD33' },
+        { id: 'madidas33', label: 'MADIDAS33' }
+    ],
+    sectionColors: {
+        dev: new THREE.Color(0x4a9eff),
+        design: new THREE.Color(0x4a9eff),
+        omega33: new THREE.Color(0x00ff44),
+        wyzard33: new THREE.Color(0xaa44ff),
+        madidas33: new THREE.Color(0xff4466)
+    },
+    currentColor: new THREE.Color(0x4a9eff),
+    omega33Links: [
+        { id: 'hexagon', label: 'HEXAGON', url: 'https://ditto.fm/hexagon-omega33', icon: '🎵' },
+        { id: 'cheeseburger', label: 'CHEESEBURGER', url: 'https://ditto.fm/cheese-burger', icon: '🎵' },
+        { id: 'beatport', label: 'BEATPORT', url: 'https://www.beatport.com/artist/omega33/1264268', icon: '🎧' },
+        { id: 'spotify', label: 'SPOTIFY', url: 'https://open.spotify.com/artist/39EACtotv2HxMQmnPVnbHt', icon: '🎧' },
+        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/omega33dj', icon: '☁️', embed: true },
+        { id: 'youtube', label: 'YOUTUBE', url: 'https://www.youtube.com/@Omega33dj', icon: '📺', embed: true },
+        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/omega33dj', icon: '📷' },
+        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@omega33dj', icon: '🎬' }
+    ],
+    wyzard33Links: [
+        { id: 'murder-bootleg', label: 'MURDER BOOTLEG', url: 'https://soundcloud.com/wyzard33/out-in-the-street-they-call-it-murder-wyzard33-bootleg-hitech-psytrance', icon: '🎵', embed: true },
+        { id: 'youtube-video', label: 'YOUTUBE', url: 'https://youtu.be/SPOAmzanUlM', icon: '📺', embed: true },
+        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/wyzard33/', icon: '📷' },
+        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/wyzard33', icon: '☁️', embed: true },
+        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@wyzard33', icon: '🎬' },
+        { id: 'facebook', label: 'FACEBOOK', url: 'https://www.facebook.com/wyzard33/', icon: '📘' }
+    ],
+    madidas33Links: [
+        { id: 'drop-da-baes', label: 'DROP DA BAES 404', url: 'https://soundcloud.com/madidas33/sets/drop-da-baes-404/s-mOumtSqUVxF', icon: '🎵', embed: true },
+        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/madidas33', icon: '☁️', embed: true },
+        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@madidas33', icon: '🎬' },
+        { id: 'instagram', label: 'INSTAGRAM', url: 'https://instagram.com/madidas33', icon: '📷' }
+    ]
+};
+
+// ============================================
+// STATE MANAGEMENT
+// ============================================
+let currentSection = 'main'; // 'main' or section id like 'omega33'
+let transitionProgress = 0; // 0 = main menu, 1 = section view
+let targetTransition = 0;
+let isTransitioning = false;
+
+// ============================================
+// SCENE SETUP
+// ============================================
 const scene = new THREE.Scene();
-
-// Add Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight.position.set(1, 1, 1);
-scene.add(directionalLight);
-
-// Sizes
 const sizes = { width: window.innerWidth, height: window.innerHeight };
 
-// Camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000);
-camera.position.set(0, 0, 5);
+const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 1000);
+camera.position.set(0, 0, 14);
 scene.add(camera);
 
-// Renderer
 const canvas = document.querySelector('canvas.webgl');
-if (!canvas) console.error('WebGL canvas not found!');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1;
-renderer.setClearColor(0x87ceeb);
+renderer.toneMappingExposure = 0.7;
 
-// Load EXR Background
-const exrLoader = new EXRLoader();
-const exrPath = '/threejs-project_website1/kloofendal_48d_partly_cloudy_puresky_4k.exr';
-console.log('Attempting to load EXR:', exrPath);
-exrLoader.load(exrPath, (texture) => {
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    scene.background = texture;
-    scene.environment = texture;
-    console.log('EXR loaded successfully:', texture.image.src);
-}, undefined, (error) => {
-    console.error('EXR loading error:', error);
-    scene.background = new THREE.Color(0x87ceeb);
-});
+// ============================================
+// POST-PROCESSING
+// ============================================
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
 
-// Spinning Background
-let rotation = 0;
-function spinBackground() {
-    rotation += 0.001;
-    scene.backgroundRotation.y = rotation;
+const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(sizes.width, sizes.height),
+    0.15,
+    0.4,
+    0.85
+);
+// composer.addPass(bloomPass);
+// composer.addPass(new OutputPass());
+
+// ============================================
+// MOUSE
+// ============================================
+const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+
+function updateMouse(event) {
+    const x = event.clientX ?? event.touches?.[0]?.clientX ?? sizes.width / 2;
+    const y = event.clientY ?? event.touches?.[0]?.clientY ?? sizes.height / 2;
+    mouse.targetX = (x / sizes.width) * 2 - 1;
+    mouse.targetY = -(y / sizes.height) * 2 + 1;
 }
 
-// Function to create or update text geometry with responsive size
-let textMesh, font;
-function createTextGeometry() {
-    const isMobile = window.innerWidth < 768;
-    const textSize = isMobile ? 0.3 : 0.5;
-    const textGeometry = new TextGeometry('hypsosis', {
+window.addEventListener('mousemove', updateMouse);
+window.addEventListener('touchmove', updateMouse);
+
+// ============================================
+// LIGHTING
+// ============================================
+scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+const mainLight = new THREE.PointLight(0x4a9eff, 1.2, 50);
+mainLight.position.set(-8, 3, 12);
+scene.add(mainLight);
+
+// ============================================
+// BACKGROUND - SKY TEXTURE
+// ============================================
+let bgRotation = 0;
+let skyTexture = null;
+
+new RGBELoader().load('/threejs-project_website1/kloofendal_48d_partly_cloudy_puresky_1k.hdr', (texture) => {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    skyTexture = texture;
+    scene.background = texture;
+    scene.environment = texture;
+}, undefined, () => {
+    scene.background = new THREE.Color(0x0a1628);
+});
+
+// ============================================
+// XORDEV SHADER BACKGROUND (for omega33)
+// ============================================
+const xorShaderGroup = new THREE.Group();
+scene.add(xorShaderGroup);
+xorShaderGroup.visible = false;
+
+const xorShaderMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        time: { value: 0 },
+        resolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
+        opacity: { value: 0 }
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            // Render in screen space - ignore camera transforms
+            gl_Position = vec4(position.xy, 0.0, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform float time;
+        uniform vec2 resolution;
+        uniform float opacity;
+        varying vec2 vUv;
+        
+        void main() {
+            vec2 FC = vUv * resolution;
+            vec2 r = resolution;
+            vec4 o = vec4(0.0);
+            
+            float t = time * 0.5;
+            
+            for(float i = 0.0, z = 0.0, d = 0.0; i < 60.0; i++) {
+                // Normalized direction
+                vec3 dir = normalize(vec3(FC.xy * 2.0 - r, r.y));
+                
+                // Round to create pixelated/crystalline structure
+                vec3 p = round(z * dir / 0.1) * 0.1;
+                p.z -= 9.0;
+                
+                // Iterative distortion
+                for(d = 0.0; d < 9.0; d++) {
+                    p += 0.2 * sin(p * d - t + z).yzx;
+                }
+                
+                // Distance calculation
+                d = length(cos(p) - 1.0) / 20.0;
+                z += d;
+                
+                // Accumulate color - green tint for omega33
+                o += vec4(z * 0.5, z, z * 0.3, 1.0) / (d * d + 0.001) * 0.00001;
+            }
+            
+            // Apply tanh for tone mapping
+            o = tanh(o * 0.8);
+            
+            // Add green tint
+            o.g *= 1.3;
+            o.r *= 0.7;
+            
+            gl_FragColor = vec4(o.rgb, opacity);
+        }
+    `,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false
+});
+
+// Use a fullscreen quad with NDC coordinates (-1 to 1)
+const xorPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    xorShaderMaterial
+);
+xorPlane.frustumCulled = false;
+xorShaderGroup.add(xorPlane);
+
+// ============================================
+// WYZARD33 SHADER BACKGROUND (purple crystalline)
+// ============================================
+const wyzardShaderGroup = new THREE.Group();
+scene.add(wyzardShaderGroup);
+wyzardShaderGroup.visible = false;
+
+const wyzardShaderMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        time: { value: 0 },
+        resolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
+        opacity: { value: 0 }
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = vec4(position.xy, 0.0, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform float time;
+        uniform vec2 resolution;
+        uniform float opacity;
+        varying vec2 vUv;
+        
+        void main() {
+            vec2 FC = vUv * resolution;
+            vec2 r = resolution;
+            vec4 o = vec4(0.0);
+            
+            float t = time * 0.5;
+            
+            for(float i = 0.0, z = 0.0, d = 0.0; z + i < 70.0; i++) {
+                // Absolute value creates mirror symmetry
+                vec3 p = abs(z * normalize(vec3(FC.xy * 2.0 - r, r.y)));
+                p.z += t * 5.0;
+                p += sin(p + p);
+                
+                // Iterative distortion with cosine
+                for(d = 0.0; d < 9.0; d++) {
+                    p += 0.4 * cos(round(0.2 * d * p) + 0.2 * t).zxy;
+                }
+                
+                // Distance calculation with sqrt
+                d = 0.1 * sqrt(length(p.xyy * p.yxy));
+                z += d;
+                
+                // Accumulate color - purple/blue tint for wyzard33
+                o += vec4(z, 1.0, 9.0, 1.0) / (d + 0.001);
+            }
+            
+            // Apply tanh for tone mapping
+            o = tanh(o / 7000.0);
+            
+            // Add purple tint
+            o.r *= 1.2;
+            o.b *= 1.4;
+            o.g *= 0.6;
+            
+            gl_FragColor = vec4(o.rgb, opacity);
+        }
+    `,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false
+});
+
+const wyzardPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    wyzardShaderMaterial
+);
+wyzardPlane.frustumCulled = false;
+wyzardShaderGroup.add(wyzardPlane);
+
+// ============================================
+// MADIDAS33 SHADER BACKGROUND (red/pink)
+// ============================================
+const madidasShaderGroup = new THREE.Group();
+scene.add(madidasShaderGroup);
+madidasShaderGroup.visible = false;
+
+const madidasShaderMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        time: { value: 0 },
+        resolution: { value: new THREE.Vector2(sizes.width, sizes.height) },
+        opacity: { value: 0 }
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = vec4(position.xy, 0.0, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform float time;
+        uniform vec2 resolution;
+        uniform float opacity;
+        varying vec2 vUv;
+        
+        void main() {
+            vec2 FC = vUv * resolution;
+            vec2 r = resolution;
+            vec4 o = vec4(0.0);
+            
+            float t = time * 0.5;
+            
+            for(float i = 0.0, z = 0.0, d = 0.0; i < 60.0; i++) {
+                vec3 p = z * normalize(vec3(FC.xy * 2.0 - r, r.y));
+                p.z -= t;
+                p = round(p / 0.1) * 0.1;
+                
+                for(d = 0.0; d < 9.0; d++) {
+                    p += 0.2 * cos(p * d + z).zzx;
+                }
+                
+                d = abs(abs(p.y) - 3.0) / 20.0;
+                z += d;
+                
+                o += vec4(19.0, z, 1.0, 1.0) / (d * d + 0.0001);
+            }
+            
+            o = tanh(o / 700000.0);
+            
+            // Red/pink tint
+            o.r *= 1.4;
+            o.g *= 0.5;
+            o.b *= 0.7;
+            
+            gl_FragColor = vec4(o.rgb, opacity);
+        }
+    `,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false
+});
+
+const madidasPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    madidasShaderMaterial
+);
+madidasPlane.frustumCulled = false;
+madidasShaderGroup.add(madidasPlane);
+
+// ============================================
+// FLOATING PARTICLES / FIREFLIES
+// ============================================
+const particleCount = 3;
+const particleGroup = new THREE.Group();
+scene.add(particleGroup);
+
+const particles = [];
+for (let i = 0; i < particleCount; i++) {
+    const geom = new THREE.PlaneGeometry(0.3, 0.3);
+    const mat = new THREE.ShaderMaterial({
+        uniforms: {
+            opacity: { value: 0.015 + Math.random() * 0.015 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform float opacity;
+            varying vec2 vUv;
+            void main() {
+                float dist = length(vUv - 0.5) * 2.0;
+                float alpha = smoothstep(1.0, 0.0, dist);
+                alpha = pow(alpha, 0.5) * opacity;
+                gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
+            }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide
+    });
+    const particle = new THREE.Mesh(geom, mat);
+    
+    particle.position.set(
+        -3 + Math.random() * 6,
+        -2 + Math.random() * 4,
+        Math.random() * 2
+    );
+    
+    particle.userData = {
+        basePos: particle.position.clone(),
+        speed: 0.2 + Math.random() * 0.3,
+        phase: Math.random() * Math.PI * 2,
+        orbitRadius: 0.8 + Math.random() * 1.2,
+        orbitSpeed: 0.2 + Math.random() * 0.4
+    };
+    
+    particleGroup.add(particle);
+    particles.push(particle);
+}
+
+// ============================================
+// LENS FLARES
+// ============================================
+const flareGroup = new THREE.Group();
+scene.add(flareGroup);
+
+const mainFlareGeom = new THREE.CircleGeometry(0.8, 64);
+const mainFlareMat = new THREE.ShaderMaterial({
+    uniforms: {
+        color: { value: new THREE.Color(0x88ccff) },
+        opacity: { value: 0.1 }
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform vec3 color;
+        uniform float opacity;
+        varying vec2 vUv;
+        void main() {
+            float dist = length(vUv - 0.5) * 2.0;
+            float alpha = smoothstep(1.0, 0.0, dist) * opacity;
+            gl_FragColor = vec4(color, alpha);
+        }
+    `,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    depthWrite: false
+});
+const mainFlare = new THREE.Mesh(mainFlareGeom, mainFlareMat);
+mainFlare.position.set(-2.5, 0.5, 0.5);
+flareGroup.add(mainFlare);
+
+const flareRings = [];
+// Removed flare rings that were positioned around the orb
+
+const secondaryFlares = [];
+for (let i = 0; i < 6; i++) {
+    const size = 0.1 + Math.random() * 0.2;
+    const geom = new THREE.CircleGeometry(size, 32);
+    const mat = new THREE.ShaderMaterial({
+        uniforms: {
+            color: { value: new THREE.Color().setHSL(0.5 + Math.random() * 0.15, 0.6, 0.7) },
+            opacity: { value: 0.03 + Math.random() * 0.04 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform vec3 color;
+            uniform float opacity;
+            varying vec2 vUv;
+            void main() {
+                float dist = length(vUv - 0.5) * 2.0;
+                float alpha = smoothstep(1.0, 0.3, dist) * opacity;
+                gl_FragColor = vec4(color, alpha);
+            }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+    const flare = new THREE.Mesh(geom, mat);
+    
+    const t = (i + 1) / 7;
+    flare.position.set(-2.5 + t * 5, 0.5 - t * 1.5, 0.3);
+    flare.userData = { t, baseOpacity: mat.uniforms.opacity.value };
+    flareGroup.add(flare);
+    secondaryFlares.push(flare);
+}
+
+// ============================================
+// AURORA RIBBONS
+// ============================================
+const auroraGroup = new THREE.Group();
+scene.add(auroraGroup);
+auroraGroup.position.z = -3;
+
+const auroraMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        time: { value: 0 },
+        color1: { value: new THREE.Color(0x4a9eff) },
+        color2: { value: new THREE.Color(0x88ffcc) },
+        color3: { value: new THREE.Color(0xaa66ff) }
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vPosition;
+        uniform float time;
+        
+        void main() {
+            vUv = uv;
+            vPosition = position;
+            
+            vec3 pos = position;
+            pos.y += sin(position.x * 0.5 + time * 0.5) * 0.3;
+            pos.z += cos(position.x * 0.3 + time * 0.3) * 0.2;
+            
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform float time;
+        uniform vec3 color1;
+        uniform vec3 color2;
+        uniform vec3 color3;
+        varying vec2 vUv;
+        varying vec3 vPosition;
+        
+        void main() {
+            float t = vUv.x + sin(vUv.y * 3.0 + time * 0.5) * 0.2;
+            t = mod(t + time * 0.1, 1.0);
+            
+            vec3 color;
+            if (t < 0.33) {
+                color = mix(color1, color2, t * 3.0);
+            } else if (t < 0.66) {
+                color = mix(color2, color3, (t - 0.33) * 3.0);
+            } else {
+                color = mix(color3, color1, (t - 0.66) * 3.0);
+            }
+            
+            float fadeY = smoothstep(0.0, 0.35, vUv.y) * smoothstep(1.0, 0.65, vUv.y);
+            float fadeX = smoothstep(0.0, 0.25, vUv.x) * smoothstep(1.0, 0.75, vUv.x);
+            float alpha = fadeX * fadeY;
+            
+            alpha *= 0.08 + sin(vUv.x * 8.0 + time) * 0.03;
+            
+            float shimmer = sin(vUv.x * 30.0 + vUv.y * 20.0 + time * 3.0) * 0.5 + 0.5;
+            shimmer = pow(shimmer, 6.0) * 0.1;
+            
+            gl_FragColor = vec4(color + shimmer, alpha);
+        }
+    `,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    depthWrite: false
+});
+
+const auroraRibbons = [];
+for (let i = 0; i < 3; i++) {
+    const ribbonGeom = new THREE.PlaneGeometry(14, 2, 60, 12);
+    const ribbon = new THREE.Mesh(ribbonGeom, auroraMaterial.clone());
+    ribbon.position.set(0, 2.5 + i * 1.0, -2 - i * 0.5);
+    ribbon.rotation.x = -0.2 + i * 0.08;
+    ribbon.userData.phaseOffset = i * 0.5;
+    auroraGroup.add(ribbon);
+    auroraRibbons.push(ribbon);
+}
+
+// ============================================
+// 3D HYPSOSIS TEXT WITH METALLIC MATERIAL
+// ============================================
+const logoGroup = new THREE.Group();
+scene.add(logoGroup);
+logoGroup.position.set(-2, 0, 0);
+
+// Placeholder variables - will be set when font loads
+let logoTextMesh = null;
+let logoMaterial = null;
+
+// Create metallic material for the text - chrome/silver look
+logoMaterial = new THREE.MeshStandardMaterial({
+    color: 0xcccccc,
+    metalness: 1.0,
+    roughness: 0.1,
+    envMapIntensity: 2.0
+});
+
+// We'll create the text mesh after the font loads (see FontLoader section below)
+
+// ============================================
+// MAIN MENU - CURVED MENU WITH IRIDESCENT BUTTONS
+// ============================================
+const menuGroup = new THREE.Group();
+scene.add(menuGroup);
+
+const menuItems = [];
+let hoveredIndex = -1;
+let selectedIndex = -1;
+
+const arcConfig = {
+    radius: 3.2,
+    startAngle: Math.PI * 0.22,
+    endAngle: Math.PI * -0.22
+};
+
+function createIridescentMaterial() {
+    return new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: 0 },
+            opacity: { value: 0.06 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            void main() {
+                vUv = uv;
+                vPosition = position;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform float time;
+            uniform float opacity;
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            
+            void main() {
+                vec2 p = vUv * 2.0;
+                
+                float flow = sin(p.x * 1.5 + p.y * 1.0 + time * 0.4) * 0.5;
+                flow += sin(p.x * 0.8 - p.y * 1.2 + time * 0.25) * 0.3;
+                
+                float hue = flow * 0.4 + 0.5 + time * 0.03;
+                
+                float h = mod(hue, 1.0) * 6.0;
+                float c = 0.4;
+                float x = c * (1.0 - abs(mod(h, 2.0) - 1.0));
+                vec3 rgb;
+                if (h < 1.0) rgb = vec3(c, x, 0.0);
+                else if (h < 2.0) rgb = vec3(x, c, 0.0);
+                else if (h < 3.0) rgb = vec3(0.0, c, x);
+                else if (h < 4.0) rgb = vec3(0.0, x, c);
+                else if (h < 5.0) rgb = vec3(x, 0.0, c);
+                else rgb = vec3(c, 0.0, x);
+                
+                vec3 color = mix(vec3(1.0), rgb + 0.5, 0.3);
+                
+                gl_FragColor = vec4(color, opacity);
+            }
+        `,
+        transparent: true,
+        side: THREE.DoubleSide
+    });
+}
+
+function createButton(section, index, total, font) {
+    const group = new THREE.Group();
+    group.userData.section = section;
+    group.userData.index = index;
+    
+    const angleSpan = arcConfig.startAngle - arcConfig.endAngle;
+    const angle = arcConfig.startAngle - (index / (total - 1)) * angleSpan;
+    const x = Math.cos(angle) * arcConfig.radius;
+    const y = Math.sin(angle) * arcConfig.radius;
+    
+    group.userData.basePosition = new THREE.Vector3(x, y, 0);
+    group.userData.baseY = y;
+    group.userData.angle = angle;
+    
+    const width = 3.2;
+    const height = 0.6;
+    const cornerRadius = 0.08;
+    
+    const shape = new THREE.Shape();
+    shape.moveTo(-width/2 + cornerRadius, -height/2);
+    shape.lineTo(width/2 - cornerRadius, -height/2);
+    shape.quadraticCurveTo(width/2, -height/2, width/2, -height/2 + cornerRadius);
+    shape.lineTo(width/2, height/2 - cornerRadius);
+    shape.quadraticCurveTo(width/2, height/2, width/2 - cornerRadius, height/2);
+    shape.lineTo(-width/2 + cornerRadius, height/2);
+    shape.quadraticCurveTo(-width/2, height/2, -width/2, height/2 - cornerRadius);
+    shape.lineTo(-width/2, -height/2 + cornerRadius);
+    shape.quadraticCurveTo(-width/2, -height/2, -width/2 + cornerRadius, -height/2);
+    
+    const backingMat = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.15
+    });
+    const backing = new THREE.Mesh(new THREE.ShapeGeometry(shape), backingMat);
+    backing.position.z = -0.002;
+    group.add(backing);
+    
+    const iridescentMat = createIridescentMaterial();
+    const fill = new THREE.Mesh(new THREE.ShapeGeometry(shape), iridescentMat);
+    group.add(fill);
+    
+    const fillMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.03
+    });
+    const fillOverlay = new THREE.Mesh(new THREE.ShapeGeometry(shape), fillMat);
+    fillOverlay.position.z = 0.001;
+    group.add(fillOverlay);
+    
+    const borderPoints = shape.getPoints(40);
+    const borderMat = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.5
+    });
+    const border = new THREE.LineLoop(
+        new THREE.BufferGeometry().setFromPoints(borderPoints.map(p => new THREE.Vector3(p.x, p.y, 0.002))),
+        borderMat
+    );
+    group.add(border);
+    
+    const highlightMat = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.4
+    });
+    const highlight = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(-width/2 + 0.15, height/2 - 0.04, 0.003),
+            new THREE.Vector3(width/2 - 0.15, height/2 - 0.04, 0.003)
+        ]),
+        highlightMat
+    );
+    group.add(highlight);
+    
+    const glowShape = new THREE.Shape();
+    const gw = width + 0.25, gh = height + 0.2, gr = 0.12;
+    glowShape.moveTo(-gw/2 + gr, -gh/2);
+    glowShape.lineTo(gw/2 - gr, -gh/2);
+    glowShape.quadraticCurveTo(gw/2, -gh/2, gw/2, -gh/2 + gr);
+    glowShape.lineTo(gw/2, gh/2 - gr);
+    glowShape.quadraticCurveTo(gw/2, gh/2, gw/2 - gr, gh/2);
+    glowShape.lineTo(-gw/2 + gr, gh/2);
+    glowShape.quadraticCurveTo(-gw/2, gh/2, -gw/2, gh/2 - gr);
+    glowShape.lineTo(-gw/2, -gh/2 + gr);
+    glowShape.quadraticCurveTo(-gw/2, -gh/2, -gw/2 + gr, -gh/2);
+    
+    const glowMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    });
+    const glow = new THREE.Mesh(new THREE.ShapeGeometry(glowShape), glowMat);
+    glow.position.z = -0.005;
+    group.add(glow);
+    
+    // Connector disc
+    const discGroup = new THREE.Group();
+    discGroup.position.set(-width/2 - 0.55, 0, 0);
+    
+    const discRing = new THREE.Mesh(
+        new THREE.RingGeometry(0.16, 0.22, 32),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, side: THREE.DoubleSide })
+    );
+    discGroup.add(discRing);
+    
+    const discInner = new THREE.Mesh(
+        new THREE.CircleGeometry(0.12, 32),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.15 })
+    );
+    discInner.position.z = 0.001;
+    discGroup.add(discInner);
+    
+    const discDot = new THREE.Mesh(
+        new THREE.CircleGeometry(0.04, 16),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 })
+    );
+    discDot.position.z = 0.002;
+    discGroup.add(discDot);
+    
+    const discGlowMesh = new THREE.Mesh(
+        new THREE.CircleGeometry(0.32, 32),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending })
+    );
+    discGlowMesh.position.z = -0.001;
+    discGroup.add(discGlowMesh);
+    
+    group.add(discGroup);
+    
+    const connector = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(-width/2 - 0.3, 0, 0),
+            new THREE.Vector3(-width/2 + 0.05, 0, 0)
+        ]),
+        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 })
+    );
+    group.add(connector);
+    
+    // Text
+    if (font) {
+        const textGeom = new TextGeometry(section.label, {
+            font: font,
+            size: 0.16,
+            depth: 0.003,
+            curveSegments: 12,
+            bevelEnabled: false
+        });
+        textGeom.computeBoundingBox();
+        const bbox = textGeom.boundingBox;
+        const textHeight = bbox.max.y - bbox.min.y;
+        
+        const yAdjustments = [0, 0.03, 0.03, 0.03, 0];
+        const yAdj = yAdjustments[index] || 0;
+        const textY = -textHeight / 2 - bbox.min.y - yAdj;
+        const textX = -width / 2 + 0.2;
+        
+        const shadowGeom = textGeom.clone();
+        const shadowMat = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            transparent: true,
+            opacity: 0.6
+        });
+        const shadow = new THREE.Mesh(shadowGeom, shadowMat);
+        shadow.position.set(textX + 0.01, textY - 0.01, 0.002);
+        group.add(shadow);
+        
+        const textMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 1.0
+        });
+        const text = new THREE.Mesh(textGeom, textMat);
+        text.position.set(textX, textY, 0.004);
+        group.add(text);
+        group.userData.textMat = textMat;
+        group.userData.shadowMat = shadowMat;
+    }
+    
+    group.userData = {
+        ...group.userData,
+        backing, backingMat,
+        fill, iridescentMat,
+        fillOverlay, fillMat,
+        border, borderMat,
+        highlight, highlightMat,
+        glow, glowMat,
+        discGroup, discRing, discInner, discDot, discGlowMesh,
+        connector,
+        width, height,
+        hoverProgress: 0
+    };
+    
+    group.position.set(x, y, 0);
+    
+    return group;
+}
+
+// ============================================
+// OMEGA33 SECTION - GREEN TRANSPARENT WINDOWS
+// ============================================
+const omega33Group = new THREE.Group();
+scene.add(omega33Group);
+omega33Group.visible = false;
+
+const omega33Items = [];
+let omega33Font = null;
+
+function createOmega33LinkWindow(linkData, index, total, font, isBackButton = false) {
+    const group = new THREE.Group();
+    group.userData.linkData = linkData;
+    group.userData.index = index;
+    group.userData.isBackButton = isBackButton;
+    
+    // Uniform size for all buttons
+    const width = 3.0;
+    const height = 0.6;
+    
+    // Single column layout - all buttons stacked vertically
+    const spacing = 0.15;
+    const x = 0;
+    const y = 2.8 - index * (height + spacing);
+    
+    group.userData.basePosition = new THREE.Vector3(x, y, 0);
+    group.userData.baseY = y;
+    
+    // Window shape
+    const shape = new THREE.Shape();
+    const cr = 0.05;
+    shape.moveTo(-width/2 + cr, -height/2);
+    shape.lineTo(width/2 - cr, -height/2);
+    shape.quadraticCurveTo(width/2, -height/2, width/2, -height/2 + cr);
+    shape.lineTo(width/2, height/2 - cr);
+    shape.quadraticCurveTo(width/2, height/2, width/2 - cr, height/2);
+    shape.lineTo(-width/2 + cr, height/2);
+    shape.quadraticCurveTo(-width/2, height/2, -width/2, height/2 - cr);
+    shape.lineTo(-width/2, -height/2 + cr);
+    shape.quadraticCurveTo(-width/2, -height/2, -width/2 + cr, -height/2);
+    
+    // Green window fill - use simple MeshBasicMaterial instead of shader
+    const windowMat = new THREE.MeshBasicMaterial({
+        color: 0x00ff44,
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+    const windowMesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), windowMat);
+    windowMesh.renderOrder = 1;
+    group.add(windowMesh);
+    
+    // Neon border
+    const borderPoints = shape.getPoints(30);
+    const borderMat = new THREE.LineBasicMaterial({
+        color: 0x00ff44,
+        transparent: true,
+        opacity: 0.8
+    });
+    const border = new THREE.LineLoop(
+        new THREE.BufferGeometry().setFromPoints(borderPoints.map(p => new THREE.Vector3(p.x, p.y, 0.002))),
+        borderMat
+    );
+    border.renderOrder = 2;
+    group.add(border);
+    
+    // Text label
+    if (font) {
+        const label = isBackButton ? '< HYPSOSIS' : linkData.label;
+        const textGeom = new TextGeometry(label, {
+            font: font,
+            size: 0.14,
+            depth: 0.001,
+            curveSegments: 6,
+            bevelEnabled: false
+        });
+        textGeom.computeBoundingBox();
+        const bbox = textGeom.boundingBox;
+        const tw = bbox.max.x - bbox.min.x;
+        const th = bbox.max.y - bbox.min.y;
+        
+        const textMat = new THREE.MeshBasicMaterial({
+            color: 0x00ff44,
+            transparent: true,
+            opacity: 1.0
+        });
+        const text = new THREE.Mesh(textGeom, textMat);
+        text.position.set(-tw/2, -th/2, 0.003);
+        text.renderOrder = 3;
+        group.add(text);
+        
+        group.userData.textMat = textMat;
+    }
+    
+    // Store for animation
+    group.userData.windowMat = windowMat;
+    group.userData.borderMat = borderMat;
+    group.userData.width = width;
+    group.userData.height = height;
+    group.userData.hoverProgress = 0;
+    
+    group.position.set(x, y, 0);
+    group.visible = false; // Start hidden, transition will show
+    
+    return group;
+}
+// Back button is now integrated into omega33Items list
+let omega33BackButton = null; // Keep reference for compatibility
+
+// ============================================
+// WYZARD33 SECTION - PURPLE TRANSPARENT WINDOWS
+// ============================================
+const wyzard33Group = new THREE.Group();
+scene.add(wyzard33Group);
+wyzard33Group.visible = false;
+
+const wyzard33Items = [];
+let wyzard33BackButton = null;
+
+function createWyzard33LinkWindow(linkData, index, total, font, isBackButton = false) {
+    const group = new THREE.Group();
+    group.userData.linkData = linkData;
+    group.userData.index = index;
+    group.userData.isBackButton = isBackButton;
+    
+    // Uniform size for all buttons
+    const width = 3.0;
+    const height = 0.6;
+    
+    // Single column layout - all buttons stacked vertically
+    const spacing = 0.15;
+    const x = 0;
+    const y = 2.8 - index * (height + spacing);
+    
+    group.userData.basePosition = new THREE.Vector3(x, y, 0);
+    group.userData.baseY = y;
+    
+    // Window shape
+    const shape = new THREE.Shape();
+    const cr = 0.05;
+    shape.moveTo(-width/2 + cr, -height/2);
+    shape.lineTo(width/2 - cr, -height/2);
+    shape.quadraticCurveTo(width/2, -height/2, width/2, -height/2 + cr);
+    shape.lineTo(width/2, height/2 - cr);
+    shape.quadraticCurveTo(width/2, height/2, width/2 - cr, height/2);
+    shape.lineTo(-width/2 + cr, height/2);
+    shape.quadraticCurveTo(-width/2, height/2, -width/2, height/2 - cr);
+    shape.lineTo(-width/2, -height/2 + cr);
+    shape.quadraticCurveTo(-width/2, -height/2, -width/2 + cr, -height/2);
+    
+    // Purple window fill
+    const windowMat = new THREE.MeshBasicMaterial({
+        color: 0xaa44ff,
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+    const windowMesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), windowMat);
+    windowMesh.renderOrder = 1;
+    group.add(windowMesh);
+    
+    // Neon border - purple
+    const borderPoints = shape.getPoints(30);
+    const borderMat = new THREE.LineBasicMaterial({
+        color: 0xaa44ff,
+        transparent: true,
+        opacity: 0.8
+    });
+    const border = new THREE.LineLoop(
+        new THREE.BufferGeometry().setFromPoints(borderPoints.map(p => new THREE.Vector3(p.x, p.y, 0.002))),
+        borderMat
+    );
+    border.renderOrder = 2;
+    group.add(border);
+    
+    // Text label
+    if (font) {
+        const label = isBackButton ? '< HYPSOSIS' : linkData.label;
+        const textGeom = new TextGeometry(label, {
+            font: font,
+            size: 0.14,
+            depth: 0.001,
+            curveSegments: 6,
+            bevelEnabled: false
+        });
+        textGeom.computeBoundingBox();
+        const bbox = textGeom.boundingBox;
+        const tw = bbox.max.x - bbox.min.x;
+        const th = bbox.max.y - bbox.min.y;
+        
+        const textMat = new THREE.MeshBasicMaterial({
+            color: 0xaa44ff,
+            transparent: true,
+            opacity: 1.0
+        });
+        const text = new THREE.Mesh(textGeom, textMat);
+        text.position.set(-tw/2, -th/2, 0.003);
+        text.renderOrder = 3;
+        group.add(text);
+        
+        group.userData.textMat = textMat;
+    }
+    
+    // Store for animation
+    group.userData.windowMat = windowMat;
+    group.userData.borderMat = borderMat;
+    group.userData.width = width;
+    group.userData.height = height;
+    group.userData.hoverProgress = 0;
+    
+    group.position.set(x, y, 0);
+    group.visible = false;
+    
+    return group;
+}
+
+// ============================================
+// MADIDAS33 SECTION - RED/PINK TRANSPARENT WINDOWS
+// ============================================
+const madidas33Group = new THREE.Group();
+scene.add(madidas33Group);
+madidas33Group.visible = false;
+
+const madidas33Items = [];
+let madidas33BackButton = null;
+
+function createMadidas33LinkWindow(linkData, index, total, font, isBackButton = false) {
+    const group = new THREE.Group();
+    group.userData.linkData = linkData;
+    group.userData.index = index;
+    group.userData.isBackButton = isBackButton;
+    
+    const width = 3.0;
+    const height = 0.6;
+    
+    const spacing = 0.15;
+    const x = 0;
+    const y = 2.8 - index * (height + spacing);
+    
+    group.userData.basePosition = new THREE.Vector3(x, y, 0);
+    group.userData.baseY = y;
+    
+    // Window shape
+    const shape = new THREE.Shape();
+    const cr = 0.05;
+    shape.moveTo(-width/2 + cr, -height/2);
+    shape.lineTo(width/2 - cr, -height/2);
+    shape.quadraticCurveTo(width/2, -height/2, width/2, -height/2 + cr);
+    shape.lineTo(width/2, height/2 - cr);
+    shape.quadraticCurveTo(width/2, height/2, width/2 - cr, height/2);
+    shape.lineTo(-width/2 + cr, height/2);
+    shape.quadraticCurveTo(-width/2, height/2, -width/2, height/2 - cr);
+    shape.lineTo(-width/2, -height/2 + cr);
+    shape.quadraticCurveTo(-width/2, -height/2, -width/2 + cr, -height/2);
+    
+    // Red/pink window fill
+    const windowMat = new THREE.MeshBasicMaterial({
+        color: 0xff4466,
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+    const windowMesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), windowMat);
+    windowMesh.renderOrder = 1;
+    group.add(windowMesh);
+    
+    // Neon border - red/pink
+    const borderPoints = shape.getPoints(30);
+    const borderMat = new THREE.LineBasicMaterial({
+        color: 0xff4466,
+        transparent: true,
+        opacity: 0.8
+    });
+    const border = new THREE.LineLoop(
+        new THREE.BufferGeometry().setFromPoints(borderPoints.map(p => new THREE.Vector3(p.x, p.y, 0.002))),
+        borderMat
+    );
+    border.renderOrder = 2;
+    group.add(border);
+    
+    // Text label
+    if (font) {
+        const label = isBackButton ? '< HYPSOSIS' : linkData.label;
+        const textGeom = new TextGeometry(label, {
+            font: font,
+            size: 0.14,
+            depth: 0.001,
+            curveSegments: 6,
+            bevelEnabled: false
+        });
+        textGeom.computeBoundingBox();
+        const bbox = textGeom.boundingBox;
+        const tw = bbox.max.x - bbox.min.x;
+        const th = bbox.max.y - bbox.min.y;
+        
+        const textMat = new THREE.MeshBasicMaterial({
+            color: 0xff2222,  // Bright red for better readability
+            transparent: true,
+            opacity: 1.0
+        });
+        const text = new THREE.Mesh(textGeom, textMat);
+        text.position.set(-tw/2, -th/2, 0.003);
+        text.renderOrder = 3;
+        group.add(text);
+        
+        group.userData.textMat = textMat;
+    }
+    
+    // Store for animation
+    group.userData.windowMat = windowMat;
+    group.userData.borderMat = borderMat;
+    group.userData.width = width;
+    group.userData.height = height;
+    group.userData.hoverProgress = 0;
+    
+    group.position.set(x, y, 0);
+    group.visible = false;
+    
+    return group;
+}
+
+// ============================================
+// LOAD FONT AND CREATE ELEMENTS
+// ============================================
+new FontLoader().load('/threejs-project_website1/fonts/Smooth_Circulars_Regular.json', (font) => {
+    omega33Font = font;
+    
+    // Create main menu
+    const total = CONFIG.sections.length;
+    CONFIG.sections.forEach((section, index) => {
+        const button = createButton(section, index, total, font);
+        menuGroup.add(button);
+        menuItems.push(button);
+    });
+    
+    // Create omega33 link windows (including back button at the end)
+    const allOmega33Items = [...CONFIG.omega33Links, { id: 'back', label: '< BACK', isBack: true }];
+    allOmega33Items.forEach((link, index) => {
+        const isBack = link.isBack || false;
+        const window = createOmega33LinkWindow(link, index, allOmega33Items.length, font, isBack);
+        omega33Group.add(window);
+        omega33Items.push(window);
+        
+        if (isBack) {
+            omega33BackButton = window;
+        }
+    });
+    
+    // Create wyzard33 link windows (including back button at the end)
+    const allWyzard33Items = [...CONFIG.wyzard33Links, { id: 'back', label: '< BACK', isBack: true }];
+    allWyzard33Items.forEach((link, index) => {
+        const isBack = link.isBack || false;
+        const window = createWyzard33LinkWindow(link, index, allWyzard33Items.length, font, isBack);
+        wyzard33Group.add(window);
+        wyzard33Items.push(window);
+        
+        if (isBack) {
+            wyzard33BackButton = window;
+        }
+    });
+    
+    // Create madidas33 link windows (including back button at the end)
+    const allMadidas33Items = [...CONFIG.madidas33Links, { id: 'back', label: '< BACK', isBack: true }];
+    allMadidas33Items.forEach((link, index) => {
+        const isBack = link.isBack || false;
+        const window = createMadidas33LinkWindow(link, index, allMadidas33Items.length, font, isBack);
+        madidas33Group.add(window);
+        madidas33Items.push(window);
+        
+        if (isBack) {
+            madidas33BackButton = window;
+        }
+    });
+    
+    // Create 3D HYPSOSIS logo text - smaller size to not overlap menu
+    const logoTextGeom = new TextGeometry('HYPSOSIS', {
         font: font,
-        size: textSize,
-        depth: 0.2,
+        size: 0.5,
+        depth: 0.15,
         curveSegments: 12,
         bevelEnabled: true,
-        bevelThickness: 0.05,
-        bevelSize: 0.03,
+        bevelThickness: 0.02,
+        bevelSize: 0.01,
         bevelOffset: 0,
         bevelSegments: 5
     });
-    const textMaterial = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        metalness: 0.8,
-        roughness: 0.2,
-        emissive: 0x000000
-    });
-    if (textMesh) {
-        scene.remove(textMesh);
-        textMesh.geometry.dispose();
+    logoTextGeom.computeBoundingBox();
+    logoTextGeom.center();
+    
+    // Apply environment map for reflections if available
+    if (skyTexture) {
+        logoMaterial.envMap = skyTexture;
     }
-    textMesh = new THREE.Mesh(textGeometry, textMaterial);
-    textGeometry.center();
-    textMesh.position.set(0, 0, 0);
-    scene.add(textMesh);
+    
+    logoTextMesh = new THREE.Mesh(logoTextGeom, logoMaterial);
+    logoGroup.add(logoTextMesh);
+});
+
+// ============================================
+// HTML OVERLAY FOR EMBEDS
+// ============================================
+function createEmbedOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'embed-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const container = document.createElement('div');
+    container.id = 'embed-container';
+    container.style.cssText = `
+        width: 80%;
+        max-width: 800px;
+        height: 80%;
+        max-height: 600px;
+        background: rgba(0, 50, 0, 0.8);
+        border: 2px solid #00ff44;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 0 30px rgba(0, 255, 68, 0.3);
+        position: relative;
+    `;
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '✕';
+    closeBtn.style.cssText = `
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: none;
+        border: none;
+        color: #00ff44;
+        font-size: 24px;
+        cursor: pointer;
+    `;
+    closeBtn.onclick = hideEmbedOverlay;
+    
+    const content = document.createElement('div');
+    content.id = 'embed-content';
+    content.style.cssText = `
+        width: 100%;
+        height: calc(100% - 40px);
+        margin-top: 30px;
+    `;
+    
+    container.appendChild(closeBtn);
+    container.appendChild(content);
+    overlay.appendChild(container);
+    document.body.appendChild(overlay);
+    
+    return overlay;
 }
 
-// Load Font for 3D Text
-const fontLoader = new FontLoader();
-const fontPath = '/threejs-project_website1/fonts/Smooth_Circulars_Regular.json';
-console.log('Attempting to load font:', fontPath);
-fontLoader.load(fontPath, (loadedFont) => {
-    font = loadedFont;
-    createTextGeometry();
-    console.log('Text loaded successfully');
-}, undefined, (error) => {
-    console.error('Font loading error:', error);
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-});
+const embedOverlay = createEmbedOverlay();
 
-// Mouse Tracking
-const mouse = new THREE.Vector2();
-window.addEventListener('mousemove', (event) => {
-    mouse.x = (event.clientX / sizes.width) * 2 - 1;
-    mouse.y = -(event.clientY / sizes.height) * 2 + 1;
-});
-
-// Click Handling with Raycaster
-const raycaster = new THREE.Raycaster();
-window.addEventListener('click', (event) => {
-    mouse.x = (event.clientX / sizes.width) * 2 - 1;
-    mouse.y = -(event.clientY / sizes.height) * 2 + 1;
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(textMesh);
-    if (intersects.length > 0) {
-        console.log('Text clicked! Navigating to URL...');
-        if (textMesh) {
-            textMesh.material.color.set(0xADD8E6);
-            setTimeout(() => {
-                textMesh.material.color.set(0xffffff);
-                window.location.href = 'https://soundcloud.com/omega33dj/hyper-reality';
-            }, 200);
+function showEmbedOverlay(type, url, section = 'omega33') {
+    const content = document.getElementById('embed-content');
+    const container = document.getElementById('embed-container');
+    
+    // Set colors based on section
+    let color, bgColor, shadowColor;
+    if (section === 'wyzard33') {
+        color = '#aa44ff';
+        bgColor = 'rgba(50, 0, 80, 0.8)';
+        shadowColor = 'rgba(170, 68, 255, 0.3)';
+    } else if (section === 'madidas33') {
+        color = '#ff4466';
+        bgColor = 'rgba(80, 0, 30, 0.8)';
+        shadowColor = 'rgba(255, 68, 102, 0.3)';
+    } else {
+        color = '#00ff44';
+        bgColor = 'rgba(0, 50, 0, 0.8)';
+        shadowColor = 'rgba(0, 255, 68, 0.3)';
+    }
+    
+    container.style.background = bgColor;
+    container.style.borderColor = color;
+    container.style.boxShadow = `0 0 30px ${shadowColor}`;
+    
+    // Update close button color
+    const closeBtn = container.querySelector('button');
+    if (closeBtn) closeBtn.style.color = color;
+    
+    if (type === 'soundcloud') {
+        let embedColor;
+        if (section === 'wyzard33') embedColor = '%23aa44ff';
+        else if (section === 'madidas33') embedColor = '%23ff4466';
+        else embedColor = '%2300ff44';
+        
+        content.innerHTML = `
+            <iframe 
+                width="100%" 
+                height="100%" 
+                scrolling="no" 
+                frameborder="no" 
+                allow="autoplay"
+                src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=${embedColor}&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true"
+            ></iframe>
+        `;
+    } else if (type === 'youtube') {
+        // Extract video ID from YouTube URL
+        let videoId = '';
+        if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1].split('?')[0];
+        } else if (url.includes('youtube.com/watch')) {
+            videoId = url.split('v=')[1]?.split('&')[0] || '';
+        } else if (url.includes('youtube.com/@')) {
+            // Channel URL - show link
+            content.innerHTML = `
+                <div style="color: ${color}; text-align: center; padding: 20px;">
+                    <h2>${section.toUpperCase()} YouTube</h2>
+                    <p>Visit channel for videos:</p>
+                    <a href="${url}" target="_blank" style="color: ${color}; font-size: 18px;">${url}</a>
+                </div>
+            `;
+            embedOverlay.style.display = 'flex';
+            return;
+        }
+        
+        if (videoId) {
+            content.innerHTML = `
+                <iframe 
+                    width="100%" 
+                    height="100%" 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=0" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                ></iframe>
+            `;
+        } else {
+            content.innerHTML = `
+                <div style="color: ${color}; text-align: center; padding: 20px;">
+                    <h2>${section.toUpperCase()} YouTube</h2>
+                    <p>Visit for video:</p>
+                    <a href="${url}" target="_blank" style="color: ${color}; font-size: 18px;">${url}</a>
+                </div>
+            `;
         }
     }
-});
+    
+    embedOverlay.style.display = 'flex';
+}
 
-// Resize Handler
-window.addEventListener('resize', () => {
+function hideEmbedOverlay() {
+    embedOverlay.style.display = 'none';
+    document.getElementById('embed-content').innerHTML = '';
+}
+
+// ============================================
+// INTERACTION
+// ============================================
+const raycaster = new THREE.Raycaster();
+let omega33HoveredIndex = -1;
+let wyzard33HoveredIndex = -1;
+let madidas33HoveredIndex = -1;
+
+function checkHover() {
+    raycaster.setFromCamera(new THREE.Vector2(mouse.targetX, mouse.targetY), camera);
+    
+    if (currentSection === 'main') {
+        let newHovered = -1;
+        for (let i = 0; i < menuItems.length; i++) {
+            const intersects = raycaster.intersectObject(menuItems[i].userData.fill);
+            if (intersects.length > 0) {
+                newHovered = i;
+                break;
+            }
+        }
+        
+        if (newHovered !== hoveredIndex) {
+            hoveredIndex = newHovered;
+            document.body.style.cursor = hoveredIndex >= 0 ? 'pointer' : 'default';
+        }
+    } else if (currentSection === 'omega33') {
+        let newHovered = -1;
+        for (let i = 0; i < omega33Items.length; i++) {
+            if (!omega33Items[i].visible) continue;
+            const meshes = omega33Items[i].children.filter(c => c.type === 'Mesh');
+            const intersects = raycaster.intersectObjects(meshes);
+            if (intersects.length > 0) {
+                newHovered = i;
+                break;
+            }
+        }
+        omega33HoveredIndex = newHovered;
+        
+        document.body.style.cursor = omega33HoveredIndex >= 0 ? 'pointer' : 'default';
+    } else if (currentSection === 'wyzard33') {
+        let newHovered = -1;
+        for (let i = 0; i < wyzard33Items.length; i++) {
+            if (!wyzard33Items[i].visible) continue;
+            const meshes = wyzard33Items[i].children.filter(c => c.type === 'Mesh');
+            const intersects = raycaster.intersectObjects(meshes);
+            if (intersects.length > 0) {
+                newHovered = i;
+                break;
+            }
+        }
+        wyzard33HoveredIndex = newHovered;
+        
+        document.body.style.cursor = wyzard33HoveredIndex >= 0 ? 'pointer' : 'default';
+    } else if (currentSection === 'madidas33') {
+        let newHovered = -1;
+        for (let i = 0; i < madidas33Items.length; i++) {
+            if (!madidas33Items[i].visible) continue;
+            const meshes = madidas33Items[i].children.filter(c => c.type === 'Mesh');
+            const intersects = raycaster.intersectObjects(meshes);
+            if (intersects.length > 0) {
+                newHovered = i;
+                break;
+            }
+        }
+        madidas33HoveredIndex = newHovered;
+        
+        document.body.style.cursor = madidas33HoveredIndex >= 0 ? 'pointer' : 'default';
+    }
+}
+
+function handleClick() {
+    // Use a simple cooldown instead of blocking during entire transition
+    const now = Date.now();
+    if (now - lastClickTime < 300) return; // 300ms cooldown between clicks
+    lastClickTime = now;
+    
+    if (currentSection === 'main' && hoveredIndex >= 0) {
+        const section = menuItems[hoveredIndex].userData.section;
+        
+        if (section.id === 'omega33') {
+            transitionToSection('omega33');
+        } else if (section.id === 'wyzard33') {
+            transitionToSection('wyzard33');
+        } else if (section.id === 'madidas33') {
+            transitionToSection('madidas33');
+        } else if (section.id === 'dev') {
+            window.open('https://hypsosis.itch.io/', '_blank');
+        } else if (section.id === 'design') {
+            window.open('https://www.instagram.com/hypsosis', '_blank');
+        }
+    } else if (currentSection === 'omega33' && omega33HoveredIndex >= 0) {
+        const item = omega33Items[omega33HoveredIndex];
+        
+        if (item.userData.isBackButton) {
+            transitionToSection('main');
+        } else {
+            const linkData = item.userData.linkData;
+            
+            if (linkData.embed && (linkData.id === 'soundcloud' || linkData.id.includes('soundcloud'))) {
+                showEmbedOverlay('soundcloud', linkData.url, 'omega33');
+            } else if (linkData.embed && (linkData.id === 'youtube' || linkData.id.includes('youtube'))) {
+                showEmbedOverlay('youtube', linkData.url, 'omega33');
+            } else {
+                window.open(linkData.url, '_blank');
+            }
+        }
+    } else if (currentSection === 'wyzard33' && wyzard33HoveredIndex >= 0) {
+        const item = wyzard33Items[wyzard33HoveredIndex];
+        
+        if (item.userData.isBackButton) {
+            transitionToSection('main');
+        } else {
+            const linkData = item.userData.linkData;
+            
+            if (linkData.embed && (linkData.id === 'soundcloud' || linkData.id.includes('soundcloud') || linkData.id === 'murder-bootleg')) {
+                showEmbedOverlay('soundcloud', linkData.url, 'wyzard33');
+            } else if (linkData.embed && (linkData.id === 'youtube' || linkData.id.includes('youtube'))) {
+                showEmbedOverlay('youtube', linkData.url, 'wyzard33');
+            } else {
+                window.open(linkData.url, '_blank');
+            }
+        }
+    } else if (currentSection === 'madidas33' && madidas33HoveredIndex >= 0) {
+        const item = madidas33Items[madidas33HoveredIndex];
+        
+        if (item.userData.isBackButton) {
+            transitionToSection('main');
+        } else {
+            const linkData = item.userData.linkData;
+            
+            if (linkData.embed && (linkData.id === 'soundcloud' || linkData.id.includes('soundcloud') || linkData.id === 'drop-da-baes')) {
+                showEmbedOverlay('soundcloud', linkData.url, 'madidas33');
+            } else if (linkData.embed && (linkData.id === 'youtube' || linkData.id.includes('youtube'))) {
+                showEmbedOverlay('youtube', linkData.url, 'madidas33');
+            } else {
+                window.open(linkData.url, '_blank');
+            }
+        }
+    }
+}
+
+let lastClickTime = 0;
+
+window.addEventListener('click', handleClick);
+window.addEventListener('touchend', handleClick);
+
+// ============================================
+// SECTION TRANSITIONS
+// ============================================
+function transitionToSection(sectionId) {
+    // Prevent transition to same section
+    if (sectionId === currentSection) return;
+    
+    // Prevent rapid toggling
+    if (isTransitioning && Math.abs(transitionProgress - targetTransition) > 0.3) return;
+    
+    isTransitioning = true;
+    
+    // Hide all section groups first
+    omega33Group.visible = false;
+    wyzard33Group.visible = false;
+    madidas33Group.visible = false;
+    xorShaderGroup.visible = false;
+    wyzardShaderGroup.visible = false;
+    madidasShaderGroup.visible = false;
+    
+    if (sectionId === 'omega33') {
+        currentSection = 'omega33';
+        targetTransition = 1;
+        
+        omega33Group.visible = true;
+        xorShaderGroup.visible = true;
+        
+        omega33Items.forEach(item => {
+            item.visible = false;
+            item.scale.setScalar(1);
+        });
+        
+        window.history.pushState({}, '', '#omega33');
+        
+        const green = CONFIG.sectionColors.omega33;
+        mainLight.color.copy(green);
+        
+    } else if (sectionId === 'wyzard33') {
+        currentSection = 'wyzard33';
+        targetTransition = 1;
+        
+        wyzard33Group.visible = true;
+        wyzardShaderGroup.visible = true;
+        
+        wyzard33Items.forEach(item => {
+            item.visible = false;
+            item.scale.setScalar(1);
+        });
+        
+        window.history.pushState({}, '', '#wyzard33');
+        
+        const purple = CONFIG.sectionColors.wyzard33;
+        mainLight.color.copy(purple);
+        
+    } else if (sectionId === 'madidas33') {
+        currentSection = 'madidas33';
+        targetTransition = 1;
+        
+        madidas33Group.visible = true;
+        madidasShaderGroup.visible = true;
+        
+        madidas33Items.forEach(item => {
+            item.visible = false;
+            item.scale.setScalar(1);
+        });
+        
+        window.history.pushState({}, '', '#madidas33');
+        
+        const red = CONFIG.sectionColors.madidas33;
+        mainLight.color.copy(red);
+        
+    } else if (sectionId === 'main') {
+        currentSection = 'main';
+        targetTransition = 0;
+        
+        window.history.pushState({}, '', '/');
+        
+        const blue = CONFIG.sectionColors.dev;
+        mainLight.color.copy(blue);
+        
+        if (skyTexture) {
+            scene.background = skyTexture;
+        }
+        
+        logoGroup.visible = true;
+        menuGroup.visible = true;
+    }
+}
+
+// ============================================
+// ANIMATION
+// ============================================
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function updateTransition(time) {
+    // Smooth transition
+    transitionProgress = lerp(transitionProgress, targetTransition, 0.03);
+    
+    // Check if transition complete
+    if (Math.abs(transitionProgress - targetTransition) < 0.001) {
+        transitionProgress = targetTransition;
+        isTransitioning = false;
+        
+        if (targetTransition === 0) {
+            omega33Group.visible = false;
+            wyzard33Group.visible = false;
+            madidas33Group.visible = false;
+            xorShaderGroup.visible = false;
+            wyzardShaderGroup.visible = false;
+            madidasShaderGroup.visible = false;
+            // Restore sky background
+            if (skyTexture) {
+                scene.background = skyTexture;
+            }
+            // Restore menu text opacity
+            menuGroup.children.forEach(button => {
+                button.traverse(child => {
+                    if (child.material && child.userData && child.userData.originalOpacity !== undefined) {
+                        child.material.opacity = child.userData.originalOpacity;
+                    }
+                });
+            });
+        } else if (targetTransition === 1) {
+            scene.background = new THREE.Color(0x000000);
+        }
+    }
+    
+    // Camera zoom effect
+    const baseZ = 14;
+    const zoomedZ = 10;
+    camera.position.z = lerp(baseZ, zoomedZ, transitionProgress);
+    
+    // Main menu - store original opacity and fade
+    if (transitionProgress > 0 && transitionProgress < 1) {
+        menuGroup.children.forEach(button => {
+            button.traverse(child => {
+                if (child.material && child.material.opacity !== undefined) {
+                    if (child.userData.originalOpacity === undefined) {
+                        child.userData.originalOpacity = child.material.opacity;
+                    }
+                    child.material.opacity = child.userData.originalOpacity * (1 - transitionProgress);
+                }
+            });
+        });
+    }
+    menuGroup.position.z = -transitionProgress * 10;
+    menuGroup.visible = transitionProgress < 0.95;
+    
+    // Completely hide logo when in a section
+    logoGroup.visible = transitionProgress < 0.8;
+    if (transitionProgress < 0.8) {
+        const logoScale = lerp(1, 0.2, transitionProgress / 0.8);
+        logoGroup.scale.setScalar(logoScale);
+    }
+    
+    // Update shader opacities based on current section
+    if (currentSection === 'omega33') {
+        xorShaderMaterial.uniforms.opacity.value = transitionProgress;
+        xorShaderMaterial.uniforms.time.value = time;
+        wyzardShaderMaterial.uniforms.opacity.value = 0;
+        madidasShaderMaterial.uniforms.opacity.value = 0;
+    } else if (currentSection === 'wyzard33') {
+        wyzardShaderMaterial.uniforms.opacity.value = transitionProgress;
+        wyzardShaderMaterial.uniforms.time.value = time;
+        xorShaderMaterial.uniforms.opacity.value = 0;
+        madidasShaderMaterial.uniforms.opacity.value = 0;
+    } else if (currentSection === 'madidas33') {
+        madidasShaderMaterial.uniforms.opacity.value = transitionProgress;
+        madidasShaderMaterial.uniforms.time.value = time;
+        xorShaderMaterial.uniforms.opacity.value = 0;
+        wyzardShaderMaterial.uniforms.opacity.value = 0;
+    } else {
+        xorShaderMaterial.uniforms.opacity.value = 0;
+        wyzardShaderMaterial.uniforms.opacity.value = 0;
+        madidasShaderMaterial.uniforms.opacity.value = 0;
+    }
+    
+    // Fade sky background to black during transition
+    if (transitionProgress > 0) {
+        renderer.toneMappingExposure = lerp(0.7, 0.1, transitionProgress);
+    }
+    
+    // Omega33 items animation
+    if (currentSection === 'omega33') {
+        omega33Items.forEach((item, i) => {
+            const delay = i * 0.05;
+            const itemProgress = Math.max(0, Math.min(1, (transitionProgress - 0.3 - delay) * 3));
+            
+            item.visible = itemProgress > 0.01;
+            
+            if (isTransitioning) {
+                const scale = lerp(0.5, 1, itemProgress);
+                item.scale.setScalar(scale);
+                
+                item.position.x = item.userData.basePosition.x;
+                item.position.y = item.userData.basePosition.y + (1 - itemProgress) * 0.5;
+                item.position.z = 0;
+                
+                if (item.userData.windowMat) {
+                    item.userData.windowMat.opacity = 0.15 * itemProgress;
+                }
+                if (item.userData.borderMat) {
+                    item.userData.borderMat.opacity = 0.8 * itemProgress;
+                }
+            }
+        });
+    }
+    
+    // Wyzard33 items animation
+    if (currentSection === 'wyzard33') {
+        wyzard33Items.forEach((item, i) => {
+            const delay = i * 0.05;
+            const itemProgress = Math.max(0, Math.min(1, (transitionProgress - 0.3 - delay) * 3));
+            
+            item.visible = itemProgress > 0.01;
+            
+            if (isTransitioning) {
+                const scale = lerp(0.5, 1, itemProgress);
+                item.scale.setScalar(scale);
+                
+                item.position.x = item.userData.basePosition.x;
+                item.position.y = item.userData.basePosition.y + (1 - itemProgress) * 0.5;
+                item.position.z = 0;
+                
+                if (item.userData.windowMat) {
+                    item.userData.windowMat.opacity = 0.15 * itemProgress;
+                }
+                if (item.userData.borderMat) {
+                    item.userData.borderMat.opacity = 0.8 * itemProgress;
+                }
+            }
+        });
+    }
+    
+    // Madidas33 items animation
+    if (currentSection === 'madidas33') {
+        madidas33Items.forEach((item, i) => {
+            const delay = i * 0.05;
+            const itemProgress = Math.max(0, Math.min(1, (transitionProgress - 0.3 - delay) * 3));
+            
+            item.visible = itemProgress > 0.01;
+            
+            if (isTransitioning) {
+                const scale = lerp(0.5, 1, itemProgress);
+                item.scale.setScalar(scale);
+                
+                item.position.x = item.userData.basePosition.x;
+                item.position.y = item.userData.basePosition.y + (1 - itemProgress) * 0.5;
+                item.position.z = 0;
+                
+                if (item.userData.windowMat) {
+                    item.userData.windowMat.opacity = 0.15 * itemProgress;
+                }
+                if (item.userData.borderMat) {
+                    item.userData.borderMat.opacity = 0.8 * itemProgress;
+                }
+            }
+        });
+    }
+    
+    // Flares/aurora fade
+    flareGroup.visible = transitionProgress < 0.3;
+    auroraGroup.visible = transitionProgress < 0.3;
+    particleGroup.visible = transitionProgress < 0.3;
+}
+
+function updateMenu(time) {
+    if (currentSection !== 'main') return;
+    
+    const spacing = 0.4;
+    
+    menuItems.forEach((button, index) => {
+        const data = button.userData;
+        const isHovered = index === hoveredIndex;
+        const isSelected = index === selectedIndex;
+        
+        const targetHover = isHovered ? 1 : 0;
+        data.hoverProgress = lerp(data.hoverProgress, targetHover, 0.15);
+        
+        const intensity = Math.max(data.hoverProgress, isSelected ? 0.4 : 0);
+        
+        const scale = 1 + data.hoverProgress * 0.18;
+        button.scale.setScalar(scale);
+        
+        let yOffset = 0;
+        if (hoveredIndex !== -1 && index !== hoveredIndex) {
+            const hoveredProgress = menuItems[hoveredIndex].userData.hoverProgress;
+            if (index < hoveredIndex) {
+                yOffset = spacing * hoveredProgress;
+            } else {
+                yOffset = -spacing * hoveredProgress;
+            }
+        }
+        
+        const basePos = data.basePosition;
+        button.position.x = basePos.x;
+        button.position.y = lerp(button.position.y, basePos.y + yOffset, 0.12);
+        button.position.z = 0;
+        
+        if (data.iridescentMat) {
+            data.iridescentMat.uniforms.time.value = time;
+            data.iridescentMat.uniforms.opacity.value = 0.04 + intensity * 0.08;
+        }
+        
+        data.fillMat.opacity = 0.03 + intensity * 0.06;
+        data.backingMat.opacity = 0.15 + intensity * 0.1;
+        data.borderMat.opacity = 0.3 + intensity * 0.3;
+        data.highlightMat.opacity = 0.25 + intensity * 0.3;
+        data.glowMat.opacity = intensity * 0.15;
+        data.connector.material.opacity = 0.15 + intensity * 0.35;
+        
+        data.discRing.material.opacity = 0.6 + intensity * 0.35;
+        data.discInner.material.opacity = 0.2 + intensity * 0.3;
+        data.discGlowMesh.material.opacity = 0.08 + intensity * 0.25;
+        data.discGroup.rotation.z += isHovered ? 0.04 : 0.004;
+        
+        const discScale = 1 + data.hoverProgress * 0.25;
+        data.discGroup.scale.setScalar(discScale);
+        
+        // Restore text opacity when back in main
+        if (data.textMat) {
+            data.textMat.opacity = 1.0;
+        }
+        if (data.shadowMat) {
+            data.shadowMat.opacity = 0.6;
+        }
+    });
+}
+
+function updateOmega33(time) {
+    if (currentSection !== 'omega33') return;
+    if (isTransitioning) return; // Don't update during transition
+    
+    const spacing = 0.35; // How much to push other buttons
+    
+    omega33Items.forEach((item, index) => {
+        const data = item.userData;
+        const isHovered = index === omega33HoveredIndex;
+        
+        const targetHover = isHovered ? 1 : 0;
+        data.hoverProgress = lerp(data.hoverProgress || 0, targetHover, 0.15);
+        
+        const intensity = data.hoverProgress;
+        
+        // Scale on hover (like main menu)
+        const scale = 1 + data.hoverProgress * 0.15;
+        item.scale.setScalar(scale);
+        
+        // Push other buttons away (like main menu)
+        let yOffset = 0;
+        if (omega33HoveredIndex !== -1 && index !== omega33HoveredIndex) {
+            const hoveredProgress = omega33Items[omega33HoveredIndex].userData.hoverProgress || 0;
+            if (index < omega33HoveredIndex) {
+                yOffset = spacing * hoveredProgress;
+            } else {
+                yOffset = -spacing * hoveredProgress;
+            }
+        }
+        
+        // Update position with offset
+        const basePos = data.basePosition;
+        item.position.x = basePos.x;
+        item.position.y = lerp(item.position.y, basePos.y + yOffset, 0.12);
+        item.position.z = 0;
+        
+        // Update materials based on hover
+        // Button fill: transparent -> more opaque green on hover
+        if (data.windowMat) {
+            data.windowMat.opacity = 0.05 + intensity * 0.35; // More transparent normally, solid green on hover
+        }
+        
+        // Border: stays bright green
+        if (data.borderMat) {
+            data.borderMat.opacity = 0.6 + intensity * 0.4;
+        }
+        
+        // Text: bright green -> dark on hover
+        if (data.textMat) {
+            // Lerp from bright green (0x00ff44) to dark green (0x003311)
+            const r = lerp(0, 0.1, intensity);
+            const g = lerp(1, 0.2, intensity);
+            const b = lerp(0.27, 0.07, intensity);
+            data.textMat.color.setRGB(r, g, b);
+        }
+    });
+}
+
+function updateWyzard33(time) {
+    if (currentSection !== 'wyzard33') return;
+    if (isTransitioning) return;
+    
+    const spacing = 0.35;
+    
+    wyzard33Items.forEach((item, index) => {
+        const data = item.userData;
+        const isHovered = index === wyzard33HoveredIndex;
+        
+        const targetHover = isHovered ? 1 : 0;
+        data.hoverProgress = lerp(data.hoverProgress || 0, targetHover, 0.15);
+        
+        const intensity = data.hoverProgress;
+        
+        // Scale on hover
+        const scale = 1 + data.hoverProgress * 0.15;
+        item.scale.setScalar(scale);
+        
+        // Push other buttons away
+        let yOffset = 0;
+        if (wyzard33HoveredIndex !== -1 && index !== wyzard33HoveredIndex) {
+            const hoveredProgress = wyzard33Items[wyzard33HoveredIndex].userData.hoverProgress || 0;
+            if (index < wyzard33HoveredIndex) {
+                yOffset = spacing * hoveredProgress;
+            } else {
+                yOffset = -spacing * hoveredProgress;
+            }
+        }
+        
+        // Update position with offset
+        const basePos = data.basePosition;
+        item.position.x = basePos.x;
+        item.position.y = lerp(item.position.y, basePos.y + yOffset, 0.12);
+        item.position.z = 0;
+        
+        // Update materials based on hover
+        // Button fill: transparent -> more opaque purple on hover
+        if (data.windowMat) {
+            data.windowMat.opacity = 0.05 + intensity * 0.35;
+        }
+        
+        // Border: stays bright purple
+        if (data.borderMat) {
+            data.borderMat.opacity = 0.6 + intensity * 0.4;
+        }
+        
+        // Text: bright purple -> dark on hover
+        if (data.textMat) {
+            // Lerp from bright purple (0xaa44ff) to dark purple
+            const r = lerp(0.67, 0.2, intensity);
+            const g = lerp(0.27, 0.1, intensity);
+            const b = lerp(1.0, 0.3, intensity);
+            data.textMat.color.setRGB(r, g, b);
+        }
+    });
+}
+
+function updateMadidas33(time) {
+    if (currentSection !== 'madidas33') return;
+    if (isTransitioning) return;
+    
+    const spacing = 0.35;
+    
+    madidas33Items.forEach((item, index) => {
+        const data = item.userData;
+        const isHovered = index === madidas33HoveredIndex;
+        
+        const targetHover = isHovered ? 1 : 0;
+        data.hoverProgress = lerp(data.hoverProgress || 0, targetHover, 0.15);
+        
+        const intensity = data.hoverProgress;
+        
+        // Scale on hover
+        const scale = 1 + data.hoverProgress * 0.15;
+        item.scale.setScalar(scale);
+        
+        // Push other buttons away
+        let yOffset = 0;
+        if (madidas33HoveredIndex !== -1 && index !== madidas33HoveredIndex) {
+            const hoveredProgress = madidas33Items[madidas33HoveredIndex].userData.hoverProgress || 0;
+            if (index < madidas33HoveredIndex) {
+                yOffset = spacing * hoveredProgress;
+            } else {
+                yOffset = -spacing * hoveredProgress;
+            }
+        }
+        
+        // Update position with offset
+        const basePos = data.basePosition;
+        item.position.x = basePos.x;
+        item.position.y = lerp(item.position.y, basePos.y + yOffset, 0.12);
+        item.position.z = 0;
+        
+        // Update materials based on hover
+        // Button fill: transparent -> more opaque red on hover
+        if (data.windowMat) {
+            data.windowMat.opacity = 0.05 + intensity * 0.35;
+        }
+        
+        // Border: stays bright red
+        if (data.borderMat) {
+            data.borderMat.opacity = 0.6 + intensity * 0.4;
+        }
+        
+        // Text: bright red -> dark on hover
+        if (data.textMat) {
+            // Lerp from bright red (0xff2222) to dark red
+            const r = lerp(1.0, 0.3, intensity);
+            const g = lerp(0.13, 0.05, intensity);
+            const b = lerp(0.13, 0.05, intensity);
+            data.textMat.color.setRGB(r, g, b);
+        }
+    });
+}
+
+function updateLogo(time) {
+    // Gentle floating motion - centered position
+    logoGroup.position.x = lerp(logoGroup.position.x, -2 + Math.sin(time * 0.25) * 0.1, 0.02);
+    logoGroup.position.y = lerp(logoGroup.position.y, Math.sin(time * 0.35) * 0.15, 0.02);
+    logoGroup.position.z = Math.sin(time * 0.2) * 0.1;
+    
+    // Mouse tracking - rotate to face mouse pointer (more responsive)
+    const targetRotY = mouse.x * 0.5;
+    const targetRotX = -mouse.y * 0.3;
+    logoGroup.rotation.y = lerp(logoGroup.rotation.y, targetRotY, 0.08);
+    logoGroup.rotation.x = lerp(logoGroup.rotation.x, targetRotX, 0.08);
+    
+    // Subtle additional animation on the mesh itself
+    if (logoTextMesh) {
+        logoTextMesh.rotation.z = Math.sin(time * 0.4) * 0.02;
+    }
+}
+
+function updateParticles(time) {
+    particles.forEach(p => {
+        const d = p.userData;
+        p.position.x = d.basePos.x + Math.sin(time * d.orbitSpeed + d.phase) * d.orbitRadius;
+        p.position.y = d.basePos.y + Math.cos(time * d.orbitSpeed * 0.7 + d.phase) * d.orbitRadius * 0.6;
+        p.position.z = d.basePos.z + Math.sin(time * d.orbitSpeed * 0.5 + d.phase * 2) * 0.5;
+        
+        p.lookAt(camera.position);
+        
+        const pulse = 0.8 + Math.sin(time * d.speed + d.phase) * 0.2;
+        p.material.uniforms.opacity.value = (0.015 + Math.random() * 0.005) * pulse;
+    });
+}
+
+function updateFlares(time) {
+    const pulse = 0.8 + Math.sin(time * 1.5) * 0.2;
+    mainFlare.scale.setScalar(pulse);
+    mainFlareMat.uniforms.opacity.value = 0.08 * pulse;
+    
+    secondaryFlares.forEach(f => {
+        const flicker = 0.7 + Math.sin(time * 2 + f.userData.t * 10) * 0.3;
+        f.material.uniforms.opacity.value = f.userData.baseOpacity * flicker;
+        f.rotation.z = time * 0.1;
+    });
+}
+
+function updateAurora(time) {
+    auroraRibbons.forEach((ribbon, i) => {
+        ribbon.material.uniforms.time.value = time + ribbon.userData.phaseOffset;
+        ribbon.position.x = Math.sin(time * 0.1 + i) * 0.5;
+    });
+}
+
+function updateParallax() {
+    mouse.x = lerp(mouse.x, mouse.targetX, 0.05);
+    mouse.y = lerp(mouse.y, mouse.targetY, 0.05);
+    
+    if (currentSection === 'main') {
+        camera.position.x = mouse.x * 0.25;
+        camera.position.y = mouse.y * 0.15;
+    }
+    camera.lookAt(0, 0, 0);
+}
+
+function updateBackground() {
+    bgRotation += 0.00015;
+    if (scene.backgroundRotation) {
+        scene.backgroundRotation.y = bgRotation;
+    }
+}
+
+// ============================================
+// RESIZE
+// ============================================
+function updateOmega33Layout() {
+    // Recalculate omega33 item positions based on screen size
+    // Now uses single column layout for all screen sizes
+    const isMobile = sizes.width < 768;
+    
+    omega33Items.forEach((item, index) => {
+        const height = item.userData.height || 0.6;
+        const spacing = 0.15;
+        
+        // Single column layout - centered
+        const x = 0;
+        const y = 2.8 - index * (height + spacing);
+        
+        item.userData.basePosition.set(x, y, 0);
+        item.userData.baseY = y;
+        
+        // Only update position if we're in omega33 section and not transitioning
+        if (currentSection === 'omega33' && !isTransitioning) {
+            item.position.x = x;
+            item.position.y = y;
+        }
+    });
+}
+
+function updateWyzard33Layout() {
+    // Single column layout for all screen sizes
+    wyzard33Items.forEach((item, index) => {
+        const height = item.userData.height || 0.6;
+        const spacing = 0.15;
+        
+        const x = 0;
+        const y = 2.8 - index * (height + spacing);
+        
+        item.userData.basePosition.set(x, y, 0);
+        item.userData.baseY = y;
+        
+        if (currentSection === 'wyzard33' && !isTransitioning) {
+            item.position.x = x;
+            item.position.y = y;
+        }
+    });
+}
+
+function updateMadidas33Layout() {
+    // Single column layout for all screen sizes
+    madidas33Items.forEach((item, index) => {
+        const height = item.userData.height || 0.6;
+        const spacing = 0.15;
+        
+        const x = 0;
+        const y = 2.8 - index * (height + spacing);
+        
+        item.userData.basePosition.set(x, y, 0);
+        item.userData.baseY = y;
+        
+        if (currentSection === 'madidas33' && !isTransitioning) {
+            item.position.x = x;
+            item.position.y = y;
+        }
+    });
+}
+
+function handleResize() {
     sizes.width = window.innerWidth;
     sizes.height = window.innerHeight;
+    
     camera.aspect = sizes.width / sizes.height;
     camera.updateProjectionMatrix();
+    
     renderer.setSize(sizes.width, sizes.height);
-    if (font) createTextGeometry();
-});
+    composer.setSize(sizes.width, sizes.height);
+    
+    xorShaderMaterial.uniforms.resolution.value.set(sizes.width, sizes.height);
+    wyzardShaderMaterial.uniforms.resolution.value.set(sizes.width, sizes.height);
+    madidasShaderMaterial.uniforms.resolution.value.set(sizes.width, sizes.height);
+    
+    const aspectRatio = sizes.width / sizes.height;
+    
+    if (sizes.width < 768) {
+        const mobileScale = Math.min(1.1, 0.7 + aspectRatio * 0.5);
+        camera.fov = 55;
+        camera.updateProjectionMatrix();
+        
+        logoGroup.scale.setScalar(mobileScale);
+        menuGroup.scale.setScalar(mobileScale * 0.95);
+        particleGroup.scale.setScalar(mobileScale);
+        flareGroup.scale.setScalar(mobileScale);
+        omega33Group.scale.setScalar(0.9);
+        wyzard33Group.scale.setScalar(0.9);
+        madidas33Group.scale.setScalar(0.9);
+    } else if (sizes.width < 1024) {
+        camera.fov = 52;
+        camera.updateProjectionMatrix();
+        
+        logoGroup.scale.setScalar(0.95);
+        menuGroup.scale.setScalar(0.95);
+        particleGroup.scale.setScalar(1);
+        flareGroup.scale.setScalar(1);
+        omega33Group.scale.setScalar(0.95);
+        wyzard33Group.scale.setScalar(0.95);
+        madidas33Group.scale.setScalar(0.95);
+    } else {
+        camera.fov = 50;
+        camera.updateProjectionMatrix();
+        
+        logoGroup.scale.setScalar(1);
+        menuGroup.scale.setScalar(1);
+        particleGroup.scale.setScalar(1);
+        flareGroup.scale.setScalar(1);
+        omega33Group.scale.setScalar(1);
+        wyzard33Group.scale.setScalar(1);
+        madidas33Group.scale.setScalar(1);
+    }
+    
+    // Update section layouts
+    updateOmega33Layout();
+    updateWyzard33Layout();
+    updateMadidas33Layout();
+}
 
-// Animation Loop
-let time = 0;
+window.addEventListener('resize', handleResize);
+handleResize();
+
+// ============================================
+// MAIN LOOP
+// ============================================
+const clock = new THREE.Clock();
+
 function animate() {
     requestAnimationFrame(animate);
-    spinBackground();
-    if (textMesh) {
-        const mouseWorld = new THREE.Vector3(mouse.x * 5, mouse.y * 5, 10);
-        textMesh.lookAt(mouseWorld);
-        time += 0.01;
-        textMesh.position.x = Math.sin(time) * 0.5;
-        textMesh.position.y = Math.cos(time) * 0.5;
-        textMesh.position.z = Math.cos(time) * 0.5;
-    }
-    renderer.render(scene, camera);
+    
+    const time = clock.getElapsedTime();
+    
+    updateBackground();
+    updateParallax();
+    updateTransition(time);
+    updateLogo(time);
+    updateParticles(time);
+    updateFlares(time);
+    updateAurora(time);
+    checkHover();
+    updateMenu(time);
+    updateOmega33(time);
+    updateWyzard33(time);
+    updateMadidas33(time);
+    
+    composer.render();
 }
+
 animate();
+
+// ============================================
+// ROUTE HANDLING
+// ============================================
+function checkRoute() {
+    const hash = window.location.hash.slice(1);
+    
+    if (hash === 'omega33') {
+        setTimeout(() => {
+            transitionToSection('omega33');
+        }, 500);
+    } else if (hash === 'wyzard33') {
+        setTimeout(() => {
+            transitionToSection('wyzard33');
+        }, 500);
+    } else if (hash === 'madidas33') {
+        setTimeout(() => {
+            transitionToSection('madidas33');
+        }, 500);
+    } else {
+        const idx = CONFIG.sections.findIndex(s => s.id === hash);
+        if (idx >= 0) {
+            selectedIndex = idx;
+            const color = CONFIG.sectionColors[hash];
+            if (color) {
+                CONFIG.currentColor.copy(color);
+                mainLight.color.copy(color);
+            }
+        }
+    }
+}
+
+window.addEventListener('hashchange', () => {
+    const hash = window.location.hash.slice(1);
+    if (hash === 'omega33' && currentSection !== 'omega33') {
+        transitionToSection('omega33');
+    } else if (hash === 'wyzard33' && currentSection !== 'wyzard33') {
+        transitionToSection('wyzard33');
+    } else if (hash === 'madidas33' && currentSection !== 'madidas33') {
+        transitionToSection('madidas33');
+    } else if (!hash && currentSection !== 'main') {
+        transitionToSection('main');
+    }
+});
+
+checkRoute();
+
+console.log('Hypsosis Hub v9 - Omega33 + Wyzard33 + Madidas33 Sections');
