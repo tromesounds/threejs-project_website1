@@ -124,7 +124,7 @@ scene.add(mainLight);
 let bgRotation = 0;
 let skyTexture = null;
 
-new RGBELoader().load(import.meta.env.BASE_URL + 'kloofendal_48d_partly_cloudy_puresky_1k.hdr', (texture) => {
+new RGBELoader().load(import.meta.env.BASE_URL + './assets/kloofendal_48d_partly_cloudy_puresky_1k.hdr', (texture) => {
     texture.mapping = THREE.EquirectangularReflectionMapping;
     skyTexture = texture;
     scene.background = texture;
@@ -1188,7 +1188,7 @@ function createMadidas33LinkWindow(linkData, index, total, font, isBackButton = 
 // ============================================
 // LOAD FONT AND CREATE ELEMENTS
 // ============================================
-new FontLoader().load(import.meta.env.BASE_URL + 'fonts/Smooth_Circulars_Regular.json', (font) => {
+new FontLoader().load(import.meta.env.BASE_URL + './assets/fonts/Smooth_Circulars_Regular.json', (font) => {
     omega33Font = font;
     
     // Create main menu
