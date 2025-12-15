@@ -8,7 +8,29 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 
-//V2.2 HDR
+
+
+//V2.3 HDR - Mobile Optimized
+
+// ============================================
+// MOBILE DETECTION
+// ============================================
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+function getScreenInfo() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const isLandscape = w > h;
+    const isSmallPhone = w < 400 || (isLandscape && h < 400);
+    const isMediumPhone = (w >= 400 && w < 768) || (isLandscape && h >= 400 && h < 768);
+    const isTablet = (w >= 768 && w < 1024) || (isLandscape && h >= 768);
+    const isMobile = isSmallPhone || isMediumPhone || isMobileDevice;
+    
+    return { w, h, isLandscape, isSmallPhone, isMediumPhone, isTablet, isMobile };
+}
+
+let screenInfo = getScreenInfo();
 
 // ============================================
 // CONFIGURATION
@@ -30,28 +52,28 @@ const CONFIG = {
     },
     currentColor: new THREE.Color(0x4a9eff),
     omega33Links: [
-        { id: 'hexagon', label: 'HEXAGON', url: 'https://ditto.fm/hexagon-omega33', icon: '🎵' },
-        { id: 'cheeseburger', label: 'CHEESEBURGER', url: 'https://ditto.fm/cheese-burger', icon: '🎵' },
-        { id: 'beatport', label: 'BEATPORT', url: 'https://www.beatport.com/artist/omega33/1264268', icon: '🎧' },
-        { id: 'spotify', label: 'SPOTIFY', url: 'https://open.spotify.com/artist/39EACtotv2HxMQmnPVnbHt', icon: '🎧' },
-        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/omega33dj', icon: '☁️', embed: true },
-        { id: 'youtube', label: 'YOUTUBE', url: 'https://www.youtube.com/@Omega33dj', icon: '📺', embed: true },
-        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/omega33dj', icon: '📷' },
-        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@omega33dj', icon: '🎬' }
+        { id: 'hexagon', label: 'HEXAGON', url: 'https://ditto.fm/hexagon-omega33', icon: 'Ã°Å¸Å½Âµ' },
+        { id: 'cheeseburger', label: 'CHEESEBURGER', url: 'https://ditto.fm/cheese-burger', icon: 'Ã°Å¸Å½Âµ' },
+        { id: 'beatport', label: 'BEATPORT', url: 'https://www.beatport.com/artist/omega33/1264268', icon: 'Ã°Å¸Å½Â§' },
+        { id: 'spotify', label: 'SPOTIFY', url: 'https://open.spotify.com/artist/39EACtotv2HxMQmnPVnbHt', icon: 'Ã°Å¸Å½Â§' },
+        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/omega33dj', icon: 'Ã¢ËœÂÃ¯Â¸Â', embed: true },
+        { id: 'youtube', label: 'YOUTUBE', url: 'https://www.youtube.com/@Omega33dj', icon: 'Ã°Å¸â€œÂº' },
+        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/omega33dj', icon: 'Ã°Å¸â€œÂ·' },
+        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@omega33dj', icon: 'Ã°Å¸Å½Â¬' }
     ],
     wyzard33Links: [
-        { id: 'murder-bootleg', label: 'MURDER BOOTLEG', url: 'https://soundcloud.com/wyzard33/out-in-the-street-they-call-it-murder-wyzard33-bootleg-hitech-psytrance', icon: '🎵', embed: true },
-        { id: 'youtube-video', label: 'YOUTUBE', url: 'https://youtu.be/SPOAmzanUlM', icon: '📺', embed: true },
-        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/wyzard33/', icon: '📷' },
-        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/wyzard33', icon: '☁️', embed: true },
-        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@wyzard33', icon: '🎬' },
-        { id: 'facebook', label: 'FACEBOOK', url: 'https://www.facebook.com/wyzard33/', icon: '📘' }
+        { id: 'murder-bootleg', label: 'MURDER BOOTLEG', url: 'https://soundcloud.com/wyzard33/out-in-the-street-they-call-it-murder-wyzard33-bootleg-hitech-psytrance', icon: 'Ã°Å¸Å½Âµ' },
+        { id: 'youtube-video', label: 'YOUTUBE', url: 'https://youtu.be/SPOAmzanUlM', icon: 'Ã°Å¸â€œÂº' },
+        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/wyzard33/', icon: 'Ã°Å¸â€œÂ·' },
+        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/wyzard33', icon: 'Ã¢ËœÂÃ¯Â¸Â' },
+        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@wyzard33', icon: 'Ã°Å¸Å½Â¬' },
+        { id: 'facebook', label: 'FACEBOOK', url: 'https://www.facebook.com/wyzard33/', icon: 'Ã°Å¸â€œËœ' }
     ],
     madidas33Links: [
-        { id: 'drop-da-baes', label: 'DROP DA BAES 404', url: 'https://soundcloud.com/madidas33/sets/drop-da-baes-404/s-mOumtSqUVxF', icon: '🎵', embed: true },
-        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/madidas33', icon: '☁️', embed: true },
-        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@madidas33', icon: '🎬' },
-        { id: 'instagram', label: 'INSTAGRAM', url: 'https://instagram.com/madidas33', icon: '📷' }
+        { id: 'drop-da-baes', label: 'DROP DA BAES 404', url: 'https://soundcloud.com/madidas33/sets/drop-da-baes-404/s-mOumtSqUVxF', icon: 'Ã°Å¸Å½Âµ' },
+        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/madidas33', icon: 'Ã¢ËœÂÃ¯Â¸Â' },
+        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@madidas33', icon: 'Ã°Å¸Å½Â¬' },
+        { id: 'instagram', label: 'INSTAGRAM', url: 'https://instagram.com/madidas33', icon: 'Ã°Å¸â€œÂ·' }
     ]
 };
 
@@ -96,19 +118,203 @@ const bloomPass = new UnrealBloomPass(
 // composer.addPass(new OutputPass());
 
 // ============================================
-// MOUSE
+// MOUSE & TOUCH INTERACTION
 // ============================================
 const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+const touch = { 
+    isDragging: false, 
+    startX: 0, 
+    startY: 0, 
+    deltaX: 0, 
+    deltaY: 0,
+    logoRotationX: 0,
+    logoRotationY: 0
+};
+let touchTapTimeout = null;
+let isTouchTap = false;
 
-function updateMouse(event) {
-    const x = event.clientX ?? event.touches?.[0]?.clientX ?? sizes.width / 2;
-    const y = event.clientY ?? event.touches?.[0]?.clientY ?? sizes.height / 2;
-    mouse.targetX = (x / sizes.width) * 2 - 1;
-    mouse.targetY = -(y / sizes.height) * 2 + 1;
+// Desktop mouse move - updates hover and logo tracking
+function onMouseMove(event) {
+    mouse.targetX = (event.clientX / sizes.width) * 2 - 1;
+    mouse.targetY = -(event.clientY / sizes.height) * 2 + 1;
 }
 
-window.addEventListener('mousemove', updateMouse);
-window.addEventListener('touchmove', updateMouse);
+// Touch start - record start position
+function onTouchStart(event) {
+    if (event.touches.length === 1) {
+        touch.isDragging = false;
+        touch.startX = event.touches[0].clientX;
+        touch.startY = event.touches[0].clientY;
+        isTouchTap = true;
+        
+        // Set position for raycasting on tap
+        mouse.targetX = (touch.startX / sizes.width) * 2 - 1;
+        mouse.targetY = -(touch.startY / sizes.height) * 2 + 1;
+    }
+}
+
+// Touch move - drag to rotate logo, don't trigger hover on buttons
+function onTouchMove(event) {
+    if (event.touches.length === 1) {
+        const currentX = event.touches[0].clientX;
+        const currentY = event.touches[0].clientY;
+        const moveDistance = Math.sqrt(
+            Math.pow(currentX - touch.startX, 2) + 
+            Math.pow(currentY - touch.startY, 2)
+        );
+        
+        // If moved more than 10px, it's a drag not a tap
+        if (moveDistance > 10) {
+            isTouchTap = false;
+            touch.isDragging = true;
+            
+            // Calculate rotation delta
+            touch.deltaX = (currentX - touch.startX) / sizes.width * 4;
+            touch.deltaY = (currentY - touch.startY) / sizes.height * 4;
+            
+            // Update logo rotation targets
+            touch.logoRotationY = touch.deltaX * 2;
+            touch.logoRotationX = -touch.deltaY * 2;
+        }
+        
+        // Don't update mouse position during drag - prevents button hover
+        event.preventDefault();
+    }
+}
+
+// Touch end - if it was a tap, handle click
+function onTouchEnd(event) {
+    if (isTouchTap) {
+        // It was a tap - trigger click behavior
+        handleTouchTap();
+    }
+    
+    // Reset drag state
+    touch.isDragging = false;
+    touch.deltaX = 0;
+    touch.deltaY = 0;
+}
+
+// Handle touch tap - find what was tapped and activate it
+function handleTouchTap() {
+    const now = Date.now();
+    if (now - lastClickTime < 300) return;
+    lastClickTime = now;
+    
+    // Update raycaster with tap position
+    raycaster.setFromCamera(new THREE.Vector2(mouse.targetX, mouse.targetY), camera);
+    
+    if (currentSection === 'main') {
+        // Check which button was tapped
+        for (let i = 0; i < menuItems.length; i++) {
+            const intersects = raycaster.intersectObject(menuItems[i].userData.fill);
+            if (intersects.length > 0) {
+                // Trigger tap animation
+                menuItems[i].userData.tapAnimation = 1.0;
+                
+                // Delay action slightly for animation
+                const section = menuItems[i].userData.section;
+                setTimeout(() => {
+                    if (section.id === 'omega33') {
+                        transitionToSection('omega33');
+                    } else if (section.id === 'wyzard33') {
+                        transitionToSection('wyzard33');
+                    } else if (section.id === 'madidas33') {
+                        transitionToSection('madidas33');
+                    } else if (section.id === 'dev') {
+                        window.open('https://hypsosis.itch.io/', '_blank');
+                    } else if (section.id === 'design') {
+                        window.open('https://www.instagram.com/hypsosis', '_blank');
+                    }
+                }, 150);
+                return;
+            }
+        }
+    } else if (currentSection === 'omega33') {
+        for (let i = 0; i < omega33Items.length; i++) {
+            if (!omega33Items[i].visible) continue;
+            const meshes = omega33Items[i].children.filter(c => c.type === 'Mesh');
+            const intersects = raycaster.intersectObjects(meshes);
+            if (intersects.length > 0) {
+                omega33Items[i].userData.tapAnimation = 1.0;
+                const item = omega33Items[i];
+                setTimeout(() => {
+                    if (item.userData.isBackButton) {
+                        transitionToSection('main');
+                    } else {
+                        const linkData = item.userData.linkData;
+                        if (linkData.embed && (linkData.id === 'soundcloud' || linkData.id.includes('soundcloud'))) {
+                            showEmbedOverlay('soundcloud', linkData.url, 'omega33');
+                        } else if (linkData.embed && (linkData.id === 'youtube' || linkData.id.includes('youtube'))) {
+                            showEmbedOverlay('youtube', linkData.url, 'omega33');
+                        } else {
+                            window.open(linkData.url, '_blank');
+                        }
+                    }
+                }, 150);
+                return;
+            }
+        }
+    } else if (currentSection === 'wyzard33') {
+        for (let i = 0; i < wyzard33Items.length; i++) {
+            if (!wyzard33Items[i].visible) continue;
+            const meshes = wyzard33Items[i].children.filter(c => c.type === 'Mesh');
+            const intersects = raycaster.intersectObjects(meshes);
+            if (intersects.length > 0) {
+                wyzard33Items[i].userData.tapAnimation = 1.0;
+                const item = wyzard33Items[i];
+                setTimeout(() => {
+                    if (item.userData.isBackButton) {
+                        transitionToSection('main');
+                    } else {
+                        const linkData = item.userData.linkData;
+                        if (linkData.embed && (linkData.id === 'soundcloud' || linkData.id.includes('soundcloud') || linkData.id === 'murder-bootleg')) {
+                            showEmbedOverlay('soundcloud', linkData.url, 'wyzard33');
+                        } else if (linkData.embed && (linkData.id === 'youtube' || linkData.id.includes('youtube'))) {
+                            showEmbedOverlay('youtube', linkData.url, 'wyzard33');
+                        } else {
+                            window.open(linkData.url, '_blank');
+                        }
+                    }
+                }, 150);
+                return;
+            }
+        }
+    } else if (currentSection === 'madidas33') {
+        for (let i = 0; i < madidas33Items.length; i++) {
+            if (!madidas33Items[i].visible) continue;
+            const meshes = madidas33Items[i].children.filter(c => c.type === 'Mesh');
+            const intersects = raycaster.intersectObjects(meshes);
+            if (intersects.length > 0) {
+                madidas33Items[i].userData.tapAnimation = 1.0;
+                const item = madidas33Items[i];
+                setTimeout(() => {
+                    if (item.userData.isBackButton) {
+                        transitionToSection('main');
+                    } else {
+                        const linkData = item.userData.linkData;
+                        if (linkData.embed && (linkData.id === 'soundcloud' || linkData.id.includes('soundcloud') || linkData.id === 'drop-da-baes')) {
+                            showEmbedOverlay('soundcloud', linkData.url, 'madidas33');
+                        } else if (linkData.embed && (linkData.id === 'youtube' || linkData.id.includes('youtube'))) {
+                            showEmbedOverlay('youtube', linkData.url, 'madidas33');
+                        } else {
+                            window.open(linkData.url, '_blank');
+                        }
+                    }
+                }, 150);
+                return;
+            }
+        }
+    }
+}
+
+// Desktop only - mouse events
+window.addEventListener('mousemove', onMouseMove);
+
+// Touch events - mobile/tablet
+window.addEventListener('touchstart', onTouchStart, { passive: false });
+window.addEventListener('touchmove', onTouchMove, { passive: false });
+window.addEventListener('touchend', onTouchEnd);
 
 // ============================================
 // LIGHTING
@@ -665,14 +871,11 @@ function createButton(section, index, total, font) {
     group.userData.section = section;
     group.userData.index = index;
     
-    const angleSpan = arcConfig.startAngle - arcConfig.endAngle;
-    const angle = arcConfig.startAngle - (index / (total - 1)) * angleSpan;
-    const x = Math.cos(angle) * arcConfig.radius;
-    const y = Math.sin(angle) * arcConfig.radius;
-    
-    group.userData.basePosition = new THREE.Vector3(x, y, 0);
-    group.userData.baseY = y;
-    group.userData.angle = angle;
+    // Don't set position here - updateMenuLayout will handle it
+    // Just initialize basePosition, it will be set properly by updateMenuLayout
+    group.userData.basePosition = new THREE.Vector3(0, 0, 0);
+    group.userData.baseY = 0;
+    group.userData.angle = 0;
     
     const width = 3.2;
     const height = 0.6;
@@ -856,7 +1059,8 @@ function createButton(section, index, total, font) {
         hoverProgress: 0
     };
     
-    group.position.set(x, y, 0);
+    // Position will be set by updateMenuLayout after creation
+    group.position.set(0, 0, 0);
     
     return group;
 }
@@ -928,7 +1132,7 @@ function createOmega33LinkWindow(linkData, index, total, font, isBackButton = fa
     border.renderOrder = 2;
     group.add(border);
     
-    // Text label
+    // Text label - BLACK fill for visibility against shader
     if (font) {
         const label = isBackButton ? '< HYPSOSIS' : linkData.label;
         const textGeom = new TextGeometry(label, {
@@ -943,8 +1147,9 @@ function createOmega33LinkWindow(linkData, index, total, font, isBackButton = fa
         const tw = bbox.max.x - bbox.min.x;
         const th = bbox.max.y - bbox.min.y;
         
+        // Main text fill - BLACK so it contrasts with green shader
         const textMat = new THREE.MeshBasicMaterial({
-            color: 0x00ff44,
+            color: 0x000000,
             transparent: true,
             opacity: 1.0
         });
@@ -1054,7 +1259,7 @@ function createWyzard33LinkWindow(linkData, index, total, font, isBackButton = f
         const th = bbox.max.y - bbox.min.y;
         
         const textMat = new THREE.MeshBasicMaterial({
-            color: 0xaa44ff,
+            color: 0xffffff,
             transparent: true,
             opacity: 1.0
         });
@@ -1160,7 +1365,7 @@ function createMadidas33LinkWindow(linkData, index, total, font, isBackButton = 
         const th = bbox.max.y - bbox.min.y;
         
         const textMat = new THREE.MeshBasicMaterial({
-            color: 0xff2222,  // Bright red for better readability
+            color: 0xffffff,
             transparent: true,
             opacity: 1.0
         });
@@ -1260,6 +1465,9 @@ new FontLoader().load(import.meta.env.BASE_URL + './assets/fonts/Smooth_Circular
     
     logoTextMesh = new THREE.Mesh(logoTextGeom, logoMaterial);
     logoGroup.add(logoTextMesh);
+    
+    // Now that buttons exist, call handleResize to position them correctly
+    handleResize();
 });
 
 // ============================================
@@ -1297,7 +1505,7 @@ function createEmbedOverlay() {
     `;
     
     const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '✕';
+    closeBtn.innerHTML = 'Ã¢Å“â€¢';
     closeBtn.style.cssText = `
         position: absolute;
         top: 10px;
@@ -1431,6 +1639,9 @@ let wyzard33HoveredIndex = -1;
 let madidas33HoveredIndex = -1;
 
 function checkHover() {
+    // Only check hover on desktop - touch devices use tap instead
+    if (isTouch && !window.matchMedia('(pointer: fine)').matches) return;
+    
     raycaster.setFromCamera(new THREE.Vector2(mouse.targetX, mouse.targetY), camera);
     
     if (currentSection === 'main') {
@@ -1565,8 +1776,12 @@ function handleClick() {
 
 let lastClickTime = 0;
 
-window.addEventListener('click', handleClick);
-window.addEventListener('touchend', handleClick);
+// Desktop click only - touch is handled by onTouchEnd/handleTouchTap
+window.addEventListener('click', (event) => {
+    // Skip if this was triggered by touch
+    if (event.sourceCapabilities?.firesTouchEvents) return;
+    handleClick();
+});
 
 // ============================================
 // SECTION TRANSITIONS
@@ -1663,11 +1878,11 @@ function transitionToSection(sectionId) {
 function lerp(a, b, t) { return a + (b - a) * t; }
 
 function updateTransition(time) {
-    // Smooth transition
-    transitionProgress = lerp(transitionProgress, targetTransition, 0.03);
+    // Smooth transition - faster speed
+    transitionProgress = lerp(transitionProgress, targetTransition, 0.08);
     
-    // Check if transition complete
-    if (Math.abs(transitionProgress - targetTransition) < 0.001) {
+    // Check if transition complete - use larger threshold for faster completion
+    if (Math.abs(transitionProgress - targetTransition) < 0.01) {
         transitionProgress = targetTransition;
         isTransitioning = false;
         
@@ -1746,8 +1961,9 @@ function updateTransition(time) {
     }
     
     // Fade sky background to black during transition
+    // Keep exposure higher so text colors stay vibrant
     if (transitionProgress > 0) {
-        renderer.toneMappingExposure = lerp(0.7, 0.1, transitionProgress);
+        renderer.toneMappingExposure = lerp(0.7, 0.5, transitionProgress);
     }
     
     // Omega33 items animation
@@ -1798,6 +2014,11 @@ function updateTransition(time) {
                 if (item.userData.borderMat) {
                     item.userData.borderMat.opacity = 0.8 * itemProgress;
                 }
+                // Keep text WHITE during transition
+                if (item.userData.textMat) {
+                    item.userData.textMat.color.setRGB(1, 1, 1);
+                    item.userData.textMat.opacity = 1.0;
+                }
             }
         });
     }
@@ -1824,6 +2045,11 @@ function updateTransition(time) {
                 if (item.userData.borderMat) {
                     item.userData.borderMat.opacity = 0.8 * itemProgress;
                 }
+                // Keep text WHITE during transition
+                if (item.userData.textMat) {
+                    item.userData.textMat.color.setRGB(1, 1, 1);
+                    item.userData.textMat.opacity = 1.0;
+                }
             }
         });
     }
@@ -1844,12 +2070,21 @@ function updateMenu(time) {
         const isHovered = index === hoveredIndex;
         const isSelected = index === selectedIndex;
         
+        // Handle tap animation (for touch devices)
+        if (data.tapAnimation !== undefined && data.tapAnimation > 0) {
+            data.tapAnimation = lerp(data.tapAnimation, 0, 0.15);
+            if (data.tapAnimation < 0.01) data.tapAnimation = 0;
+        }
+        const tapIntensity = data.tapAnimation || 0;
+        
         const targetHover = isHovered ? 1 : 0;
         data.hoverProgress = lerp(data.hoverProgress, targetHover, 0.15);
         
-        const intensity = Math.max(data.hoverProgress, isSelected ? 0.4 : 0);
+        // Combine hover and tap for intensity
+        const intensity = Math.max(data.hoverProgress, tapIntensity, isSelected ? 0.4 : 0);
         
-        const scale = 1 + data.hoverProgress * 0.18;
+        // Scale includes both hover and tap
+        const scale = 1 + Math.max(data.hoverProgress, tapIntensity) * 0.18;
         button.scale.setScalar(scale);
         
         let yOffset = 0;
@@ -1884,7 +2119,7 @@ function updateMenu(time) {
         data.discGlowMesh.material.opacity = 0.08 + intensity * 0.25;
         data.discGroup.rotation.z += isHovered ? 0.04 : 0.004;
         
-        const discScale = 1 + data.hoverProgress * 0.25;
+        const discScale = 1 + Math.max(data.hoverProgress, tapIntensity) * 0.25;
         data.discGroup.scale.setScalar(discScale);
         
         // Restore text opacity when back in main
@@ -1899,7 +2134,8 @@ function updateMenu(time) {
 
 function updateOmega33(time) {
     if (currentSection !== 'omega33') return;
-    if (isTransitioning) return; // Don't update during transition
+    // Allow hover effects when transition is mostly complete (>0.8) instead of waiting for 100%
+    if (isTransitioning && transitionProgress < 0.8) return;
     
     const spacing = 0.35; // How much to push other buttons
     
@@ -1907,13 +2143,20 @@ function updateOmega33(time) {
         const data = item.userData;
         const isHovered = index === omega33HoveredIndex;
         
+        // Handle tap animation (for touch devices)
+        if (data.tapAnimation !== undefined && data.tapAnimation > 0) {
+            data.tapAnimation = lerp(data.tapAnimation, 0, 0.15);
+            if (data.tapAnimation < 0.01) data.tapAnimation = 0;
+        }
+        const tapIntensity = data.tapAnimation || 0;
+        
         const targetHover = isHovered ? 1 : 0;
         data.hoverProgress = lerp(data.hoverProgress || 0, targetHover, 0.15);
         
-        const intensity = data.hoverProgress;
+        const intensity = Math.max(data.hoverProgress, tapIntensity);
         
-        // Scale on hover (like main menu)
-        const scale = 1 + data.hoverProgress * 0.15;
+        // Scale on hover/tap (like main menu)
+        const scale = 1 + intensity * 0.15;
         item.scale.setScalar(scale);
         
         // Push other buttons away (like main menu)
@@ -1933,10 +2176,10 @@ function updateOmega33(time) {
         item.position.y = lerp(item.position.y, basePos.y + yOffset, 0.12);
         item.position.z = 0;
         
-        // Update materials based on hover
+        // Update materials based on hover/tap
         // Button fill: transparent -> more opaque green on hover
         if (data.windowMat) {
-            data.windowMat.opacity = 0.05 + intensity * 0.35; // More transparent normally, solid green on hover
+            data.windowMat.opacity = 0.05 + intensity * 0.35;
         }
         
         // Border: stays bright green
@@ -1944,20 +2187,17 @@ function updateOmega33(time) {
             data.borderMat.opacity = 0.6 + intensity * 0.4;
         }
         
-        // Text: bright green -> dark on hover
+        // Text fill: always BLACK for visibility
         if (data.textMat) {
-            // Lerp from bright green (0x00ff44) to dark green (0x003311)
-            const r = lerp(0, 0.1, intensity);
-            const g = lerp(1, 0.2, intensity);
-            const b = lerp(0.27, 0.07, intensity);
-            data.textMat.color.setRGB(r, g, b);
+            data.textMat.color.setRGB(0, 0, 0);
+            data.textMat.opacity = 1.0;
         }
     });
 }
 
 function updateWyzard33(time) {
     if (currentSection !== 'wyzard33') return;
-    if (isTransitioning) return;
+    if (isTransitioning && transitionProgress < 0.8) return;
     
     const spacing = 0.35;
     
@@ -1965,13 +2205,20 @@ function updateWyzard33(time) {
         const data = item.userData;
         const isHovered = index === wyzard33HoveredIndex;
         
+        // Handle tap animation (for touch devices)
+        if (data.tapAnimation !== undefined && data.tapAnimation > 0) {
+            data.tapAnimation = lerp(data.tapAnimation, 0, 0.15);
+            if (data.tapAnimation < 0.01) data.tapAnimation = 0;
+        }
+        const tapIntensity = data.tapAnimation || 0;
+        
         const targetHover = isHovered ? 1 : 0;
         data.hoverProgress = lerp(data.hoverProgress || 0, targetHover, 0.15);
         
-        const intensity = data.hoverProgress;
+        const intensity = Math.max(data.hoverProgress, tapIntensity);
         
-        // Scale on hover
-        const scale = 1 + data.hoverProgress * 0.15;
+        // Scale on hover/tap
+        const scale = 1 + intensity * 0.15;
         item.scale.setScalar(scale);
         
         // Push other buttons away
@@ -1991,7 +2238,7 @@ function updateWyzard33(time) {
         item.position.y = lerp(item.position.y, basePos.y + yOffset, 0.12);
         item.position.z = 0;
         
-        // Update materials based on hover
+        // Update materials based on hover/tap
         // Button fill: transparent -> more opaque purple on hover
         if (data.windowMat) {
             data.windowMat.opacity = 0.05 + intensity * 0.35;
@@ -2002,20 +2249,17 @@ function updateWyzard33(time) {
             data.borderMat.opacity = 0.6 + intensity * 0.4;
         }
         
-        // Text: bright purple -> dark on hover
+        // Text: always WHITE for visibility
         if (data.textMat) {
-            // Lerp from bright purple (0xaa44ff) to dark purple
-            const r = lerp(0.67, 0.2, intensity);
-            const g = lerp(0.27, 0.1, intensity);
-            const b = lerp(1.0, 0.3, intensity);
-            data.textMat.color.setRGB(r, g, b);
+            data.textMat.color.setRGB(1, 1, 1);
+            data.textMat.opacity = 1.0;
         }
     });
 }
 
 function updateMadidas33(time) {
     if (currentSection !== 'madidas33') return;
-    if (isTransitioning) return;
+    if (isTransitioning && transitionProgress < 0.8) return;
     
     const spacing = 0.35;
     
@@ -2023,13 +2267,20 @@ function updateMadidas33(time) {
         const data = item.userData;
         const isHovered = index === madidas33HoveredIndex;
         
+        // Handle tap animation (for touch devices)
+        if (data.tapAnimation !== undefined && data.tapAnimation > 0) {
+            data.tapAnimation = lerp(data.tapAnimation, 0, 0.15);
+            if (data.tapAnimation < 0.01) data.tapAnimation = 0;
+        }
+        const tapIntensity = data.tapAnimation || 0;
+        
         const targetHover = isHovered ? 1 : 0;
         data.hoverProgress = lerp(data.hoverProgress || 0, targetHover, 0.15);
         
-        const intensity = data.hoverProgress;
+        const intensity = Math.max(data.hoverProgress, tapIntensity);
         
-        // Scale on hover
-        const scale = 1 + data.hoverProgress * 0.15;
+        // Scale on hover/tap
+        const scale = 1 + intensity * 0.15;
         item.scale.setScalar(scale);
         
         // Push other buttons away
@@ -2049,7 +2300,7 @@ function updateMadidas33(time) {
         item.position.y = lerp(item.position.y, basePos.y + yOffset, 0.12);
         item.position.z = 0;
         
-        // Update materials based on hover
+        // Update materials based on hover/tap
         // Button fill: transparent -> more opaque red on hover
         if (data.windowMat) {
             data.windowMat.opacity = 0.05 + intensity * 0.35;
@@ -2060,28 +2311,46 @@ function updateMadidas33(time) {
             data.borderMat.opacity = 0.6 + intensity * 0.4;
         }
         
-        // Text: bright red -> dark on hover
+        // Text: always WHITE for visibility
         if (data.textMat) {
-            // Lerp from bright red (0xff2222) to dark red
-            const r = lerp(1.0, 0.3, intensity);
-            const g = lerp(0.13, 0.05, intensity);
-            const b = lerp(0.13, 0.05, intensity);
-            data.textMat.color.setRGB(r, g, b);
+            data.textMat.color.setRGB(1, 1, 1);
+            data.textMat.opacity = 1.0;
         }
     });
 }
 
 function updateLogo(time) {
-    // Gentle floating motion - centered position
-    logoGroup.position.x = lerp(logoGroup.position.x, -2 + Math.sin(time * 0.25) * 0.1, 0.02);
-    logoGroup.position.y = lerp(logoGroup.position.y, Math.sin(time * 0.35) * 0.15, 0.02);
+    // Get base positions (set by handleResize for mobile layout)
+    const baseX = logoGroup.userData.baseX !== undefined ? logoGroup.userData.baseX : -2;
+    const baseY = logoGroup.userData.baseY !== undefined ? logoGroup.userData.baseY : 0;
+    
+    // Gentle floating motion around base position
+    logoGroup.position.x = lerp(logoGroup.position.x, baseX + Math.sin(time * 0.25) * 0.1, 0.02);
+    logoGroup.position.y = lerp(logoGroup.position.y, baseY + Math.sin(time * 0.35) * 0.15, 0.02);
     logoGroup.position.z = Math.sin(time * 0.2) * 0.1;
     
-    // Mouse tracking - rotate to face mouse pointer (more responsive)
-    const targetRotY = mouse.x * 0.5;
-    const targetRotX = -mouse.y * 0.3;
-    logoGroup.rotation.y = lerp(logoGroup.rotation.y, targetRotY, 0.08);
-    logoGroup.rotation.x = lerp(logoGroup.rotation.x, targetRotX, 0.08);
+    // Rotation control - different for desktop vs touch
+    if (touch.isDragging) {
+        // Touch drag - use accumulated rotation from drag
+        logoGroup.rotation.y = lerp(logoGroup.rotation.y, touch.logoRotationY, 0.15);
+        logoGroup.rotation.x = lerp(logoGroup.rotation.x, touch.logoRotationX, 0.15);
+    } else if (isTouch && !window.matchMedia('(pointer: fine)').matches) {
+        // Touch device but not dragging - slowly return to neutral with gentle idle motion
+        const idleRotY = Math.sin(time * 0.3) * 0.1;
+        const idleRotX = Math.sin(time * 0.2) * 0.05;
+        logoGroup.rotation.y = lerp(logoGroup.rotation.y, idleRotY, 0.02);
+        logoGroup.rotation.x = lerp(logoGroup.rotation.x, idleRotX, 0.02);
+        
+        // Decay the stored touch rotation
+        touch.logoRotationY = lerp(touch.logoRotationY, 0, 0.02);
+        touch.logoRotationX = lerp(touch.logoRotationX, 0, 0.02);
+    } else {
+        // Desktop - follow mouse
+        const targetRotY = mouse.x * 0.5;
+        const targetRotX = -mouse.y * 0.3;
+        logoGroup.rotation.y = lerp(logoGroup.rotation.y, targetRotY, 0.08);
+        logoGroup.rotation.x = lerp(logoGroup.rotation.x, targetRotX, 0.08);
+    }
     
     // Subtle additional animation on the mesh itself
     if (logoTextMesh) {
@@ -2143,23 +2412,42 @@ function updateBackground() {
 // ============================================
 // RESIZE
 // ============================================
+
+// Helper to get section button layout based on screen
+function getSectionLayout() {
+    const { isLandscape, isSmallPhone, isMediumPhone, isMobile } = screenInfo;
+    const itemCount = 9; // max items in omega33
+    
+    if (isSmallPhone && !isLandscape) {
+        // Small phone portrait - compact spacing
+        return { startY: 2.0, spacing: 0.10, height: 0.55 };
+    } else if (isSmallPhone && isLandscape) {
+        // Small phone landscape - very compact
+        return { startY: 1.5, spacing: 0.08, height: 0.45 };
+    } else if (isMediumPhone && !isLandscape) {
+        // Medium phone portrait
+        return { startY: 2.4, spacing: 0.12, height: 0.58 };
+    } else if (isMediumPhone && isLandscape) {
+        // Medium phone landscape
+        return { startY: 1.8, spacing: 0.10, height: 0.50 };
+    } else if (isMobile) {
+        // Tablet
+        return { startY: 2.6, spacing: 0.14, height: 0.60 };
+    }
+    // Desktop
+    return { startY: 2.8, spacing: 0.15, height: 0.6 };
+}
+
 function updateOmega33Layout() {
-    // Recalculate omega33 item positions based on screen size
-    // Now uses single column layout for all screen sizes
-    const isMobile = sizes.width < 768;
+    const layout = getSectionLayout();
     
     omega33Items.forEach((item, index) => {
-        const height = item.userData.height || 0.6;
-        const spacing = 0.15;
-        
-        // Single column layout - centered
         const x = 0;
-        const y = 2.8 - index * (height + spacing);
+        const y = layout.startY - index * (layout.height + layout.spacing);
         
         item.userData.basePosition.set(x, y, 0);
         item.userData.baseY = y;
         
-        // Only update position if we're in omega33 section and not transitioning
         if (currentSection === 'omega33' && !isTransitioning) {
             item.position.x = x;
             item.position.y = y;
@@ -2168,13 +2456,11 @@ function updateOmega33Layout() {
 }
 
 function updateWyzard33Layout() {
-    // Single column layout for all screen sizes
+    const layout = getSectionLayout();
+    
     wyzard33Items.forEach((item, index) => {
-        const height = item.userData.height || 0.6;
-        const spacing = 0.15;
-        
         const x = 0;
-        const y = 2.8 - index * (height + spacing);
+        const y = layout.startY - index * (layout.height + layout.spacing);
         
         item.userData.basePosition.set(x, y, 0);
         item.userData.baseY = y;
@@ -2187,13 +2473,11 @@ function updateWyzard33Layout() {
 }
 
 function updateMadidas33Layout() {
-    // Single column layout for all screen sizes
+    const layout = getSectionLayout();
+    
     madidas33Items.forEach((item, index) => {
-        const height = item.userData.height || 0.6;
-        const spacing = 0.15;
-        
         const x = 0;
-        const y = 2.8 - index * (height + spacing);
+        const y = layout.startY - index * (layout.height + layout.spacing);
         
         item.userData.basePosition.set(x, y, 0);
         item.userData.baseY = y;
@@ -2209,8 +2493,10 @@ function handleResize() {
     sizes.width = window.innerWidth;
     sizes.height = window.innerHeight;
     
+    // Update screen info
+    screenInfo = getScreenInfo();
+    
     camera.aspect = sizes.width / sizes.height;
-    camera.updateProjectionMatrix();
     
     renderer.setSize(sizes.width, sizes.height);
     composer.setSize(sizes.width, sizes.height);
@@ -2219,51 +2505,189 @@ function handleResize() {
     wyzardShaderMaterial.uniforms.resolution.value.set(sizes.width, sizes.height);
     madidasShaderMaterial.uniforms.resolution.value.set(sizes.width, sizes.height);
     
+    const { isLandscape, isSmallPhone, isMediumPhone, isTablet, isMobile } = screenInfo;
     const aspectRatio = sizes.width / sizes.height;
     
-    if (sizes.width < 768) {
-        const mobileScale = Math.min(1.1, 0.7 + aspectRatio * 0.5);
-        camera.fov = 55;
-        camera.updateProjectionMatrix();
+    // Calculate responsive values based on screen size and orientation
+    let fov, cameraZ, logoScale, menuScale, sectionScale, logoX, logoY, menuX, menuY;
+    
+    if (isMobile && !isLandscape) {
+        // PORTRAIT MODE - Dynamic scaling based on actual width
+        // Tested for: S8+ (360px), S20 Ultra (412px), Z Fold (344px), Pixel 7 (412px)
         
-        logoGroup.scale.setScalar(mobileScale);
-        menuGroup.scale.setScalar(mobileScale * 0.95);
-        particleGroup.scale.setScalar(mobileScale);
-        flareGroup.scale.setScalar(mobileScale);
-        omega33Group.scale.setScalar(0.9);
-        wyzard33Group.scale.setScalar(0.9);
-        madidas33Group.scale.setScalar(0.9);
-    } else if (sizes.width < 1024) {
-        camera.fov = 52;
-        camera.updateProjectionMatrix();
+        fov = 50;
         
-        logoGroup.scale.setScalar(0.95);
-        menuGroup.scale.setScalar(0.95);
-        particleGroup.scale.setScalar(1);
-        flareGroup.scale.setScalar(1);
-        omega33Group.scale.setScalar(0.95);
-        wyzard33Group.scale.setScalar(0.95);
-        madidas33Group.scale.setScalar(0.95);
+        // Calculate scale factor - normalize around 380px as baseline
+        const baseWidth = 380;
+        const widthRatio = sizes.width / baseWidth;
+        
+        // Camera distance
+        cameraZ = 12;
+        
+        // Logo scale stays consistent
+        logoScale = 0.75;
+        
+        // Menu scale: larger but capped to prevent overflow
+        menuScale = Math.min(1.0, Math.max(0.8, 0.85 * widthRatio));
+        
+        sectionScale = 0.9;
+        logoX = 0;
+        logoY = 3.2;
+        menuX = 0; // Keep centered, let updateMenuLayout handle offset via arc
+        menuY = -0.9;
+        
+    } else if (isSmallPhone && isLandscape) {
+        // Small phone landscape - side by side layout
+        fov = 50;
+        cameraZ = 10;
+        logoScale = 0.7;
+        menuScale = 0.85;
+        sectionScale = 0.85;
+        logoX = -3.0;
+        logoY = 0;
+        menuX = 1.0;
+        menuY = 0;
+    } else if (isMediumPhone && isLandscape) {
+        // Medium phone landscape - side by side
+        fov = 50;
+        cameraZ = 11;
+        logoScale = 0.75;
+        menuScale = 0.9;
+        sectionScale = 0.9;
+        logoX = -2.8;
+        logoY = 0;
+        menuX = 0.8;
+        menuY = 0;
+    } else if (isTablet) {
+        if (isLandscape) {
+            // Tablet landscape - side by side
+            fov = 50;
+            cameraZ = 14;
+            logoScale = 0.9;
+            menuScale = 0.95;
+            sectionScale = 0.95;
+            logoX = -2;
+            logoY = 0;
+            menuX = 0;
+            menuY = 0;
+        } else {
+            // Tablet portrait - logo above
+            fov = 50;
+            cameraZ = 13;
+            logoScale = 0.85;
+            menuScale = 0.95;
+            sectionScale = 0.95;
+            logoX = 0;
+            logoY = 3.4;
+            menuX = 0;
+            menuY = -0.5;
+        }
     } else {
-        camera.fov = 50;
-        camera.updateProjectionMatrix();
-        
-        logoGroup.scale.setScalar(1);
-        menuGroup.scale.setScalar(1);
-        particleGroup.scale.setScalar(1);
-        flareGroup.scale.setScalar(1);
-        omega33Group.scale.setScalar(1);
-        wyzard33Group.scale.setScalar(1);
-        madidas33Group.scale.setScalar(1);
+        // Desktop - original side by side layout
+        fov = 50;
+        cameraZ = 14;
+        logoScale = 1;
+        menuScale = 1;
+        sectionScale = 1;
+        logoX = -2;
+        logoY = 0;
+        menuX = 0;
+        menuY = 0;
     }
+    
+    camera.fov = fov;
+    camera.position.z = cameraZ;
+    camera.updateProjectionMatrix();
+    
+    // Update logo position and scale
+    logoGroup.scale.setScalar(logoScale);
+    logoGroup.userData.baseX = logoX;
+    logoGroup.userData.baseY = logoY;
+    
+    // Update menu position and scale
+    menuGroup.scale.setScalar(menuScale);
+    menuGroup.position.x = menuX;
+    menuGroup.position.y = menuY;
+    
+    // Update section groups
+    omega33Group.scale.setScalar(sectionScale);
+    wyzard33Group.scale.setScalar(sectionScale);
+    madidas33Group.scale.setScalar(sectionScale);
+    
+    particleGroup.scale.setScalar(Math.min(1, menuScale));
+    flareGroup.scale.setScalar(Math.min(1, menuScale));
     
     // Update section layouts
     updateOmega33Layout();
     updateWyzard33Layout();
     updateMadidas33Layout();
+    
+    // Update menu button positions for mobile
+    updateMenuLayout();
+}
+
+// Update menu layout for responsive positioning
+function updateMenuLayout() {
+    if (menuItems.length === 0) return;
+    
+    const { isLandscape, isSmallPhone, isMediumPhone, isTablet, isMobile } = screenInfo;
+    const total = menuItems.length;
+    
+    // Arc config - use original proven values
+    let radius, startAngle, endAngle, xOffset;
+    
+    if (isMobile && !isLandscape) {
+        // PORTRAIT MODE - use original arc angles that worked
+        radius = 3.2;
+        startAngle = Math.PI * 0.22;
+        endAngle = Math.PI * -0.22;
+        
+        // X offset to shift left for centering
+        // Narrower screens need MORE left shift (more negative)
+        const baseWidth = 380;
+        const widthRatio = sizes.width / baseWidth;
+        // Calculate offset and clamp to prevent going off screen either side
+        const rawOffset = -1.9 + (widthRatio - 1) * 0.5;
+        xOffset = Math.max(-2.1, Math.min(-1.7, rawOffset));
+    } else if (isTablet && !isLandscape) {
+        // Tablet portrait
+        radius = 3.2;
+        startAngle = Math.PI * 0.22;
+        endAngle = Math.PI * -0.22;
+        xOffset = -0.5;
+    } else if (isMobile && isLandscape) {
+        // Mobile landscape
+        radius = 3.0;
+        startAngle = Math.PI * 0.20;
+        endAngle = Math.PI * -0.20;
+        xOffset = 0;
+    } else {
+        // Desktop/tablet landscape - original config
+        radius = 3.2;
+        startAngle = Math.PI * 0.22;
+        endAngle = Math.PI * -0.22;
+        xOffset = 0;
+    }
+    
+    menuItems.forEach((button, index) => {
+        const angleSpan = startAngle - endAngle;
+        const angle = startAngle - (index / (total - 1)) * angleSpan;
+        const x = Math.cos(angle) * radius + xOffset;
+        const y = Math.sin(angle) * radius;
+        
+        button.userData.basePosition.set(x, y, 0);
+        button.userData.baseY = y;
+        button.userData.angle = angle;
+        
+        button.position.x = x;
+        button.position.y = y;
+    });
 }
 
 window.addEventListener('resize', handleResize);
+window.addEventListener('orientationchange', () => {
+    setTimeout(handleResize, 100);
+});
 handleResize();
 
 // ============================================
@@ -2295,49 +2719,77 @@ function animate() {
 animate();
 
 // ============================================
-// ROUTE HANDLING
+// CLEAN URL + HASH ROUTING (GitHub Pages compatible)
 // ============================================
-function checkRoute() {
-    const hash = window.location.hash.slice(1);
-    
-    if (hash === 'omega33') {
-        setTimeout(() => {
-            transitionToSection('omega33');
-        }, 500);
-    } else if (hash === 'wyzard33') {
-        setTimeout(() => {
-            transitionToSection('wyzard33');
-        }, 500);
-    } else if (hash === 'madidas33') {
-        setTimeout(() => {
-            transitionToSection('madidas33');
-        }, 500);
-    } else {
-        const idx = CONFIG.sections.findIndex(s => s.id === hash);
-        if (idx >= 0) {
-            selectedIndex = idx;
-            const color = CONFIG.sectionColors[hash];
-            if (color) {
-                CONFIG.currentColor.copy(color);
-                mainLight.color.copy(color);
-            }
-        }
-    }
+
+const CLEAN_TO_HASH = {
+  '/omega33':   '#omega33',
+  '/wyzard33':  '#wyzard33',
+  '/madidas33': '#madidas33'
+};
+
+// Go to a section with CLEAN URL in address bar
+function goToSection(section) {
+  const cleanPath = '/' + section;           // e.g. "/madidas33"
+  const hash = '#' + section;                // e.g. "#madidas33"
+
+  // Show clean URL in browser
+  history.pushState(null, '', cleanPath);
+  
+  // Force the hash so your existing logic works
+  window.location.hash = hash;
 }
 
-window.addEventListener('hashchange', () => {
-    const hash = window.location.hash.slice(1);
-    if (hash === 'omega33' && currentSection !== 'omega33') {
-        transitionToSection('omega33');
-    } else if (hash === 'wyzard33' && currentSection !== 'wyzard33') {
-        transitionToSection('wyzard33');
-    } else if (hash === 'madidas33' && currentSection !== 'madidas33') {
-        transitionToSection('madidas33');
-    } else if (!hash && currentSection !== 'main') {
-        transitionToSection('main');
+// Replace your old button click handlers with these (or call goToSection directly)
+document.querySelector('#omega33-btn')?.addEventListener('click', () => goToSection('omega33'));
+document.querySelector('#wyzard33-btn')?.addEventListener('click', () => goToSection('wyzard33'));
+document.querySelector('#madidas33-btn')?.addEventListener('click', () => goToSection('madidas33'));
+
+// Handle direct clean URL access (e.g. user pasted /madidas33)
+(function handleDirectCleanUrl() {
+  const path = window.location.pathname.toLowerCase();
+  const targetHash = CLEAN_TO_HASH[path];
+
+  if (targetHash) {
+    // Keep clean URL visible, but force the hash
+    history.replaceState(null, '', path);
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
     }
-});
+  }
+})();
 
-checkRoute();
+// Run route check on EVERY page load (direct clean URL, refresh, etc.)
+function runRouteCheck() {
+  const hash = window.location.hash.slice(1);
 
-console.log('Hypsosis Hub v9 - Omega33 + Wyzard33 + Madidas33 Sections');
+  if (hash === 'omega33' && currentSection !== 'omega33') {
+    setTimeout(() => transitionToSection('omega33'), 500);
+  } else if (hash === 'wyzard33' && currentSection !== 'wyzard33') {
+    setTimeout(() => transitionToSection('wyzard33'), 500);
+  } else if (hash === 'madidas33' && currentSection !== 'madidas33') {
+    setTimeout(() => transitionToSection('madidas33'), 500);
+  } else if (!hash && currentSection !== 'main') {
+    transitionToSection('main');
+  } else {
+    const idx = CONFIG.sections.findIndex(s => s.id === hash);
+    if (idx >= 0) {
+      selectedIndex = idx;
+      const color = CONFIG.sectionColors[hash];
+      if (color) {
+        CONFIG.currentColor.copy(color);
+        mainLight.color.copy(color);
+      }
+    }
+  }
+}
+
+// Run immediately + on every load/refresh
+runRouteCheck();
+window.addEventListener('DOMContentLoaded', runRouteCheck);
+window.addEventListener('load', runRouteCheck);
+
+// Keep listening for normal navigation too
+window.addEventListener('hashchange', runRouteCheck);
+
+console.log('Hypsosis Hub v10 - Mobile responsive: centered layout for portrait, proper scaling for all screen sizes');
