@@ -628,7 +628,7 @@ const mainFlareGeom = new THREE.CircleGeometry(0.8, 64);
 const mainFlareMat = new THREE.ShaderMaterial({
     uniforms: {
         color: { value: new THREE.Color(0x88ccff) },
-        opacity: { value: 0.1 }
+        opacity: { value: 0.3 }
     },
     vertexShader: `
         varying vec2 vUv;
@@ -1142,10 +1142,8 @@ function createOmega33LinkWindow(linkData, index, total, font, isBackButton = fa
             curveSegments: 6,
             bevelEnabled: false
         });
-        textGeom.computeBoundingBox();
-        const bbox = textGeom.boundingBox;
-        const tw = bbox.max.x - bbox.min.x;
-        const th = bbox.max.y - bbox.min.y;
+        // Center the geometry - this properly centers text regardless of characters
+        textGeom.center();
         
         // Main text fill - BLACK so it contrasts with green shader
         const textMat = new THREE.MeshBasicMaterial({
@@ -1154,7 +1152,8 @@ function createOmega33LinkWindow(linkData, index, total, font, isBackButton = fa
             opacity: 1.0
         });
         const text = new THREE.Mesh(textGeom, textMat);
-        text.position.set(-tw/2, -th/2, 0.003);
+        // Slight downward offset to visually center (font baseline adjustment)
+        text.position.set(0, -0.02, 0.003);
         text.renderOrder = 3;
         group.add(text);
         
@@ -1253,10 +1252,8 @@ function createWyzard33LinkWindow(linkData, index, total, font, isBackButton = f
             curveSegments: 6,
             bevelEnabled: false
         });
-        textGeom.computeBoundingBox();
-        const bbox = textGeom.boundingBox;
-        const tw = bbox.max.x - bbox.min.x;
-        const th = bbox.max.y - bbox.min.y;
+        // Center the geometry - this properly centers text regardless of characters
+        textGeom.center();
         
         const textMat = new THREE.MeshBasicMaterial({
             color: 0xffffff,
@@ -1264,7 +1261,7 @@ function createWyzard33LinkWindow(linkData, index, total, font, isBackButton = f
             opacity: 1.0
         });
         const text = new THREE.Mesh(textGeom, textMat);
-        text.position.set(-tw/2, -th/2, 0.003);
+        text.position.set(0, 0, 0.003);
         text.renderOrder = 3;
         group.add(text);
         
@@ -1359,10 +1356,8 @@ function createMadidas33LinkWindow(linkData, index, total, font, isBackButton = 
             curveSegments: 6,
             bevelEnabled: false
         });
-        textGeom.computeBoundingBox();
-        const bbox = textGeom.boundingBox;
-        const tw = bbox.max.x - bbox.min.x;
-        const th = bbox.max.y - bbox.min.y;
+        // Center the geometry - this properly centers text regardless of characters
+        textGeom.center();
         
         const textMat = new THREE.MeshBasicMaterial({
             color: 0xffffff,
@@ -1370,7 +1365,7 @@ function createMadidas33LinkWindow(linkData, index, total, font, isBackButton = 
             opacity: 1.0
         });
         const text = new THREE.Mesh(textGeom, textMat);
-        text.position.set(-tw/2, -th/2, 0.003);
+        text.position.set(0, 0, 0.003);
         text.renderOrder = 3;
         group.add(text);
         
@@ -2414,32 +2409,48 @@ function updateBackground() {
 // ============================================
 
 // Helper to get section button layout based on screen
-function getSectionLayout() {
+function getSectionLayout(itemCount) {
     const { isLandscape, isSmallPhone, isMediumPhone, isMobile } = screenInfo;
-    const itemCount = 9; // max items in omega33
+    
+    let spacing, height;
     
     if (isSmallPhone && !isLandscape) {
         // Small phone portrait - compact spacing
-        return { startY: 2.0, spacing: 0.10, height: 0.55 };
+        spacing = 0.10;
+        height = 0.55;
     } else if (isSmallPhone && isLandscape) {
         // Small phone landscape - very compact
-        return { startY: 1.5, spacing: 0.08, height: 0.45 };
+        spacing = 0.08;
+        height = 0.45;
     } else if (isMediumPhone && !isLandscape) {
         // Medium phone portrait
-        return { startY: 2.4, spacing: 0.12, height: 0.58 };
+        spacing = 0.12;
+        height = 0.58;
     } else if (isMediumPhone && isLandscape) {
         // Medium phone landscape
-        return { startY: 1.8, spacing: 0.10, height: 0.50 };
+        spacing = 0.10;
+        height = 0.50;
     } else if (isMobile) {
         // Tablet
-        return { startY: 2.6, spacing: 0.14, height: 0.60 };
+        spacing = 0.14;
+        height = 0.60;
+    } else {
+        // Desktop
+        spacing = 0.15;
+        height = 0.6;
     }
-    // Desktop
-    return { startY: 2.8, spacing: 0.15, height: 0.6 };
+    
+    // Calculate total height of all buttons
+    const totalHeight = itemCount * height + (itemCount - 1) * spacing;
+    
+    // Calculate startY to center the buttons vertically (center = 0)
+    const startY = totalHeight / 2 - height / 2;
+    
+    return { startY, spacing, height };
 }
 
 function updateOmega33Layout() {
-    const layout = getSectionLayout();
+    const layout = getSectionLayout(omega33Items.length);
     
     omega33Items.forEach((item, index) => {
         const x = 0;
@@ -2456,7 +2467,7 @@ function updateOmega33Layout() {
 }
 
 function updateWyzard33Layout() {
-    const layout = getSectionLayout();
+    const layout = getSectionLayout(wyzard33Items.length);
     
     wyzard33Items.forEach((item, index) => {
         const x = 0;
@@ -2473,7 +2484,7 @@ function updateWyzard33Layout() {
 }
 
 function updateMadidas33Layout() {
-    const layout = getSectionLayout();
+    const layout = getSectionLayout(madidas33Items.length);
     
     madidas33Items.forEach((item, index) => {
         const x = 0;
@@ -2521,42 +2532,42 @@ function handleResize() {
         const baseWidth = 380;
         const widthRatio = sizes.width / baseWidth;
         
-        // Camera distance
-        cameraZ = 12;
+        // Camera distance - bring MUCH closer for bigger appearance
+        cameraZ = 9;
         
-        // Logo scale stays consistent
-        logoScale = 0.75;
+        // Logo scale - bigger
+        logoScale = 0.9;
         
-        // Menu scale: larger but capped to prevent overflow
-        menuScale = Math.min(1.0, Math.max(0.8, 0.85 * widthRatio));
+        // Menu scale: LARGER for all mobile portrait
+        menuScale = 1.1;
         
-        sectionScale = 0.9;
+        sectionScale = 1.0;
         logoX = 0;
-        logoY = 3.2;
-        menuX = 0; // Keep centered, let updateMenuLayout handle offset via arc
-        menuY = -0.9;
+        logoY = 3.0;
+        menuX = 0;
+        menuY = -0.8;
         
     } else if (isSmallPhone && isLandscape) {
-        // Small phone landscape - side by side layout
-        fov = 50;
-        cameraZ = 10;
-        logoScale = 0.7;
-        menuScale = 0.85;
-        sectionScale = 0.85;
-        logoX = -3.0;
+        // Small phone landscape - EVEN LARGER
+        fov = 35;
+        cameraZ = 6;
+        logoScale = 1.2;
+        menuScale = 1.3;
+        sectionScale = 1.1;
+        logoX = -2.0;
         logoY = 0;
-        menuX = 1.0;
+        menuX = 0.5;
         menuY = 0;
     } else if (isMediumPhone && isLandscape) {
-        // Medium phone landscape - side by side
-        fov = 50;
-        cameraZ = 11;
-        logoScale = 0.75;
-        menuScale = 0.9;
-        sectionScale = 0.9;
-        logoX = -2.8;
+        // Medium phone landscape - EVEN LARGER
+        fov = 35;
+        cameraZ = 6.5;
+        logoScale = 1.25;
+        menuScale = 1.35;
+        sectionScale = 1.15;
+        logoX = -2.0;
         logoY = 0;
-        menuX = 0.8;
+        menuX = 0.4;
         menuY = 0;
     } else if (isTablet) {
         if (isLandscape) {
@@ -2643,12 +2654,12 @@ function updateMenuLayout() {
         endAngle = Math.PI * -0.22;
         
         // X offset to shift left for centering
-        // Narrower screens need MORE left shift (more negative)
+        // Narrower screens (like S8+ 360px) need MORE left shift
         const baseWidth = 380;
         const widthRatio = sizes.width / baseWidth;
-        // Calculate offset and clamp to prevent going off screen either side
-        const rawOffset = -1.9 + (widthRatio - 1) * 0.5;
-        xOffset = Math.max(-2.1, Math.min(-1.7, rawOffset));
+        // More aggressive left shift, especially for narrow screens
+        const rawOffset = -2.1 + (widthRatio - 1) * 0.3;
+        xOffset = Math.max(-2.3, Math.min(-1.9, rawOffset));
     } else if (isTablet && !isLandscape) {
         // Tablet portrait
         radius = 3.2;
