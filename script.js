@@ -52,28 +52,28 @@ const CONFIG = {
     },
     currentColor: new THREE.Color(0x4a9eff),
     omega33Links: [
-        { id: 'hexagon', label: 'HEXAGON', url: 'https://ditto.fm/hexagon-omega33', icon: 'Ã°Å¸Å½Âµ' },
-        { id: 'cheeseburger', label: 'CHEESEBURGER', url: 'https://ditto.fm/cheese-burger', icon: 'Ã°Å¸Å½Âµ' },
-        { id: 'beatport', label: 'BEATPORT', url: 'https://www.beatport.com/artist/omega33/1264268', icon: 'Ã°Å¸Å½Â§' },
-        { id: 'spotify', label: 'SPOTIFY', url: 'https://open.spotify.com/artist/39EACtotv2HxMQmnPVnbHt', icon: 'Ã°Å¸Å½Â§' },
-        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/omega33dj', icon: 'Ã¢ËœÂÃ¯Â¸Â', embed: true },
-        { id: 'youtube', label: 'YOUTUBE', url: 'https://www.youtube.com/@Omega33dj', icon: 'Ã°Å¸â€œÂº' },
-        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/omega33dj', icon: 'Ã°Å¸â€œÂ·' },
-        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@omega33dj', icon: 'Ã°Å¸Å½Â¬' }
+        { id: 'hexagon', label: 'HEXAGON', url: 'https://ditto.fm/hexagon-omega33', icon: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Âµ' },
+        { id: 'cheeseburger', label: 'CHEESEBURGER', url: 'https://ditto.fm/cheese-burger', icon: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Âµ' },
+        { id: 'beatport', label: 'BEATPORT', url: 'https://www.beatport.com/artist/omega33/1264268', icon: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â§' },
+        { id: 'spotify', label: 'SPOTIFY', url: 'https://open.spotify.com/artist/39EACtotv2HxMQmnPVnbHt', icon: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â§' },
+        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/omega33dj', icon: 'ÃƒÂ¢Ã‹Å“Ã‚ÂÃƒÂ¯Ã‚Â¸Ã‚Â', embed: true },
+        { id: 'youtube', label: 'YOUTUBE', url: 'https://www.youtube.com/@Omega33dj', icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Âº' },
+        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/omega33dj', icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â·' },
+        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@omega33dj', icon: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¬' }
     ],
     wyzard33Links: [
-        { id: 'murder-bootleg', label: 'MURDER BOOTLEG', url: 'https://soundcloud.com/wyzard33/out-in-the-street-they-call-it-murder-wyzard33-bootleg-hitech-psytrance', icon: 'Ã°Å¸Å½Âµ' },
-        { id: 'youtube-video', label: 'YOUTUBE', url: 'https://youtu.be/SPOAmzanUlM', icon: 'Ã°Å¸â€œÂº' },
-        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/wyzard33/', icon: 'Ã°Å¸â€œÂ·' },
-        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/wyzard33', icon: 'Ã¢ËœÂÃ¯Â¸Â' },
-        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@wyzard33', icon: 'Ã°Å¸Å½Â¬' },
-        { id: 'facebook', label: 'FACEBOOK', url: 'https://www.facebook.com/wyzard33/', icon: 'Ã°Å¸â€œËœ' }
+        { id: 'murder-bootleg', label: 'MURDER BOOTLEG', url: 'https://soundcloud.com/wyzard33/out-in-the-street-they-call-it-murder-wyzard33-bootleg-hitech-psytrance', icon: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Âµ' },
+        { id: 'youtube-video', label: 'YOUTUBE', url: 'https://youtu.be/SPOAmzanUlM', icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Âº' },
+        { id: 'instagram', label: 'INSTAGRAM', url: 'https://www.instagram.com/wyzard33/', icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â·' },
+        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/wyzard33', icon: 'ÃƒÂ¢Ã‹Å“Ã‚ÂÃƒÂ¯Ã‚Â¸Ã‚Â' },
+        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@wyzard33', icon: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¬' },
+        { id: 'facebook', label: 'FACEBOOK', url: 'https://www.facebook.com/wyzard33/', icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‹Å“' }
     ],
     madidas33Links: [
-        { id: 'drop-da-baes', label: 'DROP DA BAES 404', url: 'https://soundcloud.com/madidas33/sets/drop-da-baes-404/s-mOumtSqUVxF', icon: 'Ã°Å¸Å½Âµ' },
-        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/madidas33', icon: 'Ã¢ËœÂÃ¯Â¸Â' },
-        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@madidas33', icon: 'Ã°Å¸Å½Â¬' },
-        { id: 'instagram', label: 'INSTAGRAM', url: 'https://instagram.com/madidas33', icon: 'Ã°Å¸â€œÂ·' }
+        { id: 'drop-da-baes', label: 'DROP DA BAES 404', url: 'https://soundcloud.com/madidas33/sets/drop-da-baes-404/s-mOumtSqUVxF', icon: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Âµ' },
+        { id: 'soundcloud', label: 'SOUNDCLOUD', url: 'https://soundcloud.com/madidas33', icon: 'ÃƒÂ¢Ã‹Å“Ã‚ÂÃƒÂ¯Ã‚Â¸Ã‚Â' },
+        { id: 'tiktok', label: 'TIKTOK', url: 'https://www.tiktok.com/@madidas33', icon: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¬' },
+        { id: 'instagram', label: 'INSTAGRAM', url: 'https://instagram.com/madidas33', icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â·' }
     ]
 };
 
@@ -84,6 +84,7 @@ let currentSection = 'main'; // 'main' or section id like 'omega33'
 let transitionProgress = 0; // 0 = main menu, 1 = section view
 let targetTransition = 0;
 let isTransitioning = false;
+let isInitialLoad = true; // Track if this is the first page load
 
 // ============================================
 // SCENE SETUP
@@ -1500,7 +1501,7 @@ function createEmbedOverlay() {
     `;
     
     const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = 'Ã¢Å“â€¢';
+    closeBtn.innerHTML = 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¢';
     closeBtn.style.cssText = `
         position: absolute;
         top: 10px;
@@ -1864,6 +1865,165 @@ function transitionToSection(sectionId) {
         
         logoGroup.visible = true;
         menuGroup.visible = true;
+    }
+}
+
+// Instant load section without animation (for direct URL access)
+// Direct URL load with fade-in animation
+// Shader fades in first, then buttons fade in and scale up
+let directLoadAnimation = null;
+
+function instantLoadSection(sectionId) {
+    if (sectionId === 'main') return;
+    
+    // Set state
+    currentSection = sectionId;
+    transitionProgress = 1;
+    targetTransition = 1;
+    isTransitioning = false;
+    
+    // Hide main menu elements
+    menuGroup.visible = false;
+    logoGroup.visible = false;
+    menuGroup.position.z = -10;
+    
+    // Hide all section groups first
+    omega33Group.visible = false;
+    wyzard33Group.visible = false;
+    madidas33Group.visible = false;
+    xorShaderGroup.visible = false;
+    wyzardShaderGroup.visible = false;
+    madidasShaderGroup.visible = false;
+    
+    // Set background to black
+    scene.background = new THREE.Color(0x000000);
+    renderer.toneMappingExposure = 0.5;
+    
+    // Set camera to zoomed position
+    camera.position.z = 10;
+    
+    // Hide particles, flares, aurora
+    flareGroup.visible = false;
+    auroraGroup.visible = false;
+    particleGroup.visible = false;
+    
+    // Get the items array and shader material for this section
+    let items, shaderMaterial, shaderGroup, sectionGroup, sectionColor;
+    
+    if (sectionId === 'omega33') {
+        items = omega33Items;
+        shaderMaterial = xorShaderMaterial;
+        shaderGroup = xorShaderGroup;
+        sectionGroup = omega33Group;
+        sectionColor = CONFIG.sectionColors.omega33;
+    } else if (sectionId === 'wyzard33') {
+        items = wyzard33Items;
+        shaderMaterial = wyzardShaderMaterial;
+        shaderGroup = wyzardShaderGroup;
+        sectionGroup = wyzard33Group;
+        sectionColor = CONFIG.sectionColors.wyzard33;
+    } else if (sectionId === 'madidas33') {
+        items = madidas33Items;
+        shaderMaterial = madidasShaderMaterial;
+        shaderGroup = madidasShaderGroup;
+        sectionGroup = madidas33Group;
+        sectionColor = CONFIG.sectionColors.madidas33;
+    }
+    
+    // Set light color
+    mainLight.color.copy(sectionColor);
+    
+    // Make shader and section visible but start at 0 opacity
+    shaderGroup.visible = true;
+    sectionGroup.visible = true;
+    shaderMaterial.uniforms.opacity.value = 0;
+    
+    // Hide all buttons initially, set starting state
+    items.forEach(item => {
+        item.visible = false;
+        item.scale.setScalar(0.5);
+        item.position.x = item.userData.basePosition.x;
+        item.position.y = item.userData.basePosition.y + 0.5;  // Start slightly higher
+        item.position.z = 0;
+        if (item.userData.windowMat) item.userData.windowMat.opacity = 0;
+        if (item.userData.borderMat) item.userData.borderMat.opacity = 0;
+        if (item.userData.textMat) item.userData.textMat.opacity = 0;
+    });
+    
+    // Animation state
+    directLoadAnimation = {
+        sectionId: sectionId,
+        shaderMaterial: shaderMaterial,
+        items: items,
+        phase: 'shader',  // 'shader' then 'buttons'
+        shaderProgress: 0,
+        buttonProgress: 0,
+        buttonStartTime: 0
+    };
+}
+
+// Update function for direct load animation - call this in the main animate loop
+function updateDirectLoadAnimation() {
+    if (!directLoadAnimation) return;
+    
+    const anim = directLoadAnimation;
+    
+    if (anim.phase === 'shader') {
+        // Fade in shader background
+        anim.shaderProgress += 0.03;  // Speed of shader fade
+        anim.shaderMaterial.uniforms.opacity.value = Math.min(1, anim.shaderProgress);
+        
+        // Once shader is mostly visible, start buttons
+        if (anim.shaderProgress >= 0.6) {
+            anim.phase = 'buttons';
+            anim.buttonStartTime = performance.now();
+            // Make buttons visible
+            anim.items.forEach(item => {
+                item.visible = true;
+            });
+        }
+    } else if (anim.phase === 'buttons') {
+        // Animate buttons - staggered fade in and scale up
+        anim.buttonProgress += 0.04;  // Speed of button animation
+        
+        anim.items.forEach((item, index) => {
+            // Stagger each button's animation
+            const delay = index * 0.08;
+            const itemProgress = Math.max(0, Math.min(1, (anim.buttonProgress - delay) * 1.5));
+            
+            // Ease out cubic for smooth deceleration
+            const eased = 1 - Math.pow(1 - itemProgress, 3);
+            
+            // Scale from 0.5 to 1
+            item.scale.setScalar(0.5 + eased * 0.5);
+            
+            // Move from slightly above to final position
+            item.position.y = item.userData.basePosition.y + (1 - eased) * 0.5;
+            
+            // Fade in materials
+            if (item.userData.windowMat) {
+                item.userData.windowMat.opacity = 0.15 * eased;
+            }
+            if (item.userData.borderMat) {
+                item.userData.borderMat.opacity = 0.8 * eased;
+            }
+            if (item.userData.textMat) {
+                item.userData.textMat.opacity = 1.0 * eased;
+            }
+        });
+        
+        // Finish shader fade if not complete
+        if (anim.shaderProgress < 1) {
+            anim.shaderProgress += 0.03;
+            anim.shaderMaterial.uniforms.opacity.value = Math.min(1, anim.shaderProgress);
+        }
+        
+        // Check if animation complete
+        const lastButtonDelay = (anim.items.length - 1) * 0.08;
+        if (anim.buttonProgress > lastButtonDelay + 1) {
+            // Animation complete - clean up
+            directLoadAnimation = null;
+        }
     }
 }
 
@@ -2523,29 +2683,77 @@ function handleResize() {
     let fov, cameraZ, logoScale, menuScale, sectionScale, logoX, logoY, menuX, menuY;
     
     if (isMobile && !isLandscape) {
-        // PORTRAIT MODE - Dynamic scaling based on actual width
-        // Tested for: S8+ (360px), S20 Ultra (412px), Z Fold (344px), Pixel 7 (412px)
+        // PORTRAIT MODE - Comprehensive dynamic scaling
+        // Handles all portrait mobile devices with smooth scaling
         
         fov = 50;
         
-        // Calculate scale factor - normalize around 380px as baseline
-        const baseWidth = 380;
+        // Calculate aspect ratio and ratios for dynamic scaling
+        const portraitAspect = sizes.width / sizes.height;
+        const baseWidth = 390;
+        const baseHeight = 844;
         const widthRatio = sizes.width / baseWidth;
+        const heightRatio = sizes.height / baseHeight;
         
-        // Camera distance - bring MUCH closer for bigger appearance
-        cameraZ = 9;
+        // Device category detection
+        const isShortScreen = sizes.height < 750;  // iPhone SE, Surface Duo style
+        const isNarrowTall = sizes.width < 360 && sizes.height > 800;  // Z Fold style
+        const isMediumWidth = sizes.width >= 500 && sizes.width < 768;  // Surface Duo style
         
-        // Logo scale - bigger
+        // Camera distance - smooth scaling based on screen size
+        if (isNarrowTall) {
+            cameraZ = 10.5;  // Z Fold: further back for smaller buttons
+        } else if (isShortScreen && sizes.width < 500) {
+            cameraZ = 8;  // iPhone SE: closer for bigger buttons
+        } else if (isMediumWidth) {
+            cameraZ = 9.5;  // Surface Duo: moderate distance
+        } else {
+            cameraZ = 9;  // Standard phones
+        }
+        
+        // Logo scale
         logoScale = 0.9;
         
-        // Menu scale: LARGER for all mobile portrait
-        menuScale = 1.1;
+        // Menu scale: dynamic based on screen type
+        if (isNarrowTall) {
+            menuScale = 0.9;  // Z Fold: smaller
+        } else if (isShortScreen && sizes.width < 500) {
+            menuScale = 1.25;  // iPhone SE: bigger
+        } else if (isMediumWidth) {
+            menuScale = 1.0;  // Surface Duo: moderate
+        } else {
+            menuScale = 1.1;  // Standard phones
+        }
         
         sectionScale = 1.0;
         logoX = 0;
-        logoY = 3.0;
-        menuX = 0;
-        menuY = -0.8;
+        
+        // Logo Y position - adjust for screen height
+        if (isShortScreen) {
+            logoY = 2.4;  // Lower for short screens
+        } else {
+            logoY = 3.0;
+        }
+        
+        // Menu X position - dynamic based on width
+        if (isNarrowTall) {
+            menuX = 0;  // Z Fold: centered
+        } else if (isMediumWidth) {
+            // Surface Duo (540px): slight left shift, scales with width
+            menuX = -0.05 - (sizes.width - 500) * 0.0005;
+        } else {
+            // Standard phones: progressive left shift
+            menuX = -0.15 - (widthRatio - 1) * 0.3;
+        }
+        
+        // Menu Y position - smooth scaling based on height
+        if (isShortScreen) {
+            // Short screens: push down more, scaled by how short
+            const shortFactor = (750 - sizes.height) / 150;  // 0 at 750, 1 at 600
+            menuY = -1.3 - shortFactor * 0.4;  // -1.3 to -1.7
+        } else {
+            menuY = -0.8;
+        }
         
     } else if (isSmallPhone && isLandscape) {
         // Small phone landscape - EVEN LARGER
@@ -2582,15 +2790,22 @@ function handleResize() {
             menuX = 0;
             menuY = 0;
         } else {
-            // Tablet portrait - logo above
+            // Tablet portrait - centered layout
+            // Covers: iPad Mini (768x1024), iPad Air (820x1180), iPad Pro (1024x1366)
+            // Surface Pro 7 (912x1368), Asus Zenbook Fold (853x1280)
             fov = 50;
-            cameraZ = 13;
+            
+            // Scale camera distance based on screen size
+            // Larger tablets need camera further back
+            const tabletWidthFactor = (sizes.width - 768) / (1024 - 768);  // 0 at 768, 1 at 1024+
+            cameraZ = 12 + Math.max(0, tabletWidthFactor) * 2;  // 12 to 14
+            
             logoScale = 0.85;
             menuScale = 0.95;
             sectionScale = 0.95;
             logoX = 0;
             logoY = 3.4;
-            menuX = 0;
+            menuX = -0.5;  // Left of center for tablets
             menuY = -0.5;
         }
     } else {
@@ -2648,24 +2863,48 @@ function updateMenuLayout() {
     let radius, startAngle, endAngle, xOffset;
     
     if (isMobile && !isLandscape) {
-        // PORTRAIT MODE - use original arc angles that worked
-        radius = 3.2;
+        // PORTRAIT MODE - Comprehensive arc positioning
+        // Smooth scaling for all mobile portrait devices
+        
+        // Device category detection
+        const isShortScreen = sizes.height < 750;
+        const isNarrowTall = sizes.width < 360 && sizes.height > 800;  // Z Fold
+        const isMediumWidth = sizes.width >= 500 && sizes.width < 768;  // Surface Duo
+        
+        // Dynamic radius
+        if (isNarrowTall) {
+            radius = 3.0;
+        } else {
+            radius = 3.2;
+        }
+        
         startAngle = Math.PI * 0.22;
         endAngle = Math.PI * -0.22;
         
-        // X offset to shift left for centering
-        // Narrower screens (like S8+ 360px) need MORE left shift
-        const baseWidth = 380;
-        const widthRatio = sizes.width / baseWidth;
-        // More aggressive left shift, especially for narrow screens
-        const rawOffset = -2.1 + (widthRatio - 1) * 0.3;
-        xOffset = Math.max(-2.3, Math.min(-1.9, rawOffset));
+        // X offset - comprehensive handling
+        if (isNarrowTall) {
+            // Z Fold (344px): centered
+            xOffset = -2.0;
+        } else if (isMediumWidth) {
+            // Surface Duo (540px) and similar: slight left shift
+            // Scale from -2.0 at 500px to -2.1 at 768px
+            const mediumFactor = (sizes.width - 500) / (768 - 500);
+            xOffset = -2.0 - mediumFactor * 0.1;
+        } else if (isShortScreen && sizes.width < 500) {
+            // iPhone SE (375x667): left shift
+            xOffset = -2.2;
+        } else {
+            // Standard phones (375-430px): progressive left shift
+            const widthFactor = Math.max(0, Math.min(1, (sizes.width - 375) / (430 - 375)));
+            xOffset = -2.1 - widthFactor * 0.2;  // -2.1 to -2.3
+        }
     } else if (isTablet && !isLandscape) {
-        // Tablet portrait
+        // Tablet portrait - centered for all tablet sizes
+        // iPad Mini, iPad Air, iPad Pro, Surface Pro, Zenbook Fold
         radius = 3.2;
         startAngle = Math.PI * 0.22;
         endAngle = Math.PI * -0.22;
-        xOffset = -0.5;
+        xOffset = -0.5;  // Left of center for tablets
     } else if (isMobile && isLandscape) {
         // Mobile landscape
         radius = 3.0;
@@ -2714,6 +2953,7 @@ function animate() {
     updateBackground();
     updateParallax();
     updateTransition(time);
+    updateDirectLoadAnimation();  // Handle direct URL load fade-in animation
     updateLogo(time);
     updateParticles(time);
     updateFlares(time);
@@ -2773,16 +3013,24 @@ document.querySelector('#madidas33-btn')?.addEventListener('click', () => goToSe
 // Run route check on EVERY page load (direct clean URL, refresh, etc.)
 function runRouteCheck() {
   const hash = window.location.hash.slice(1);
+  
+  // Check if this is a valid section
+  const validSections = ['omega33', 'wyzard33', 'madidas33'];
+  const isValidSection = validSections.includes(hash);
 
-  if (hash === 'omega33' && currentSection !== 'omega33') {
-    setTimeout(() => transitionToSection('omega33'), 500);
-  } else if (hash === 'wyzard33' && currentSection !== 'wyzard33') {
-    setTimeout(() => transitionToSection('wyzard33'), 500);
-  } else if (hash === 'madidas33' && currentSection !== 'madidas33') {
-    setTimeout(() => transitionToSection('madidas33'), 500);
+  if (isValidSection && currentSection !== hash) {
+    if (isInitialLoad) {
+      // Direct URL access - load instantly without animation
+      // Wait a bit for fonts/assets to load, then instant load
+      setTimeout(() => instantLoadSection(hash), 100);
+    } else {
+      // Navigation during session - use animated transition
+      transitionToSection(hash);
+    }
   } else if (!hash && currentSection !== 'main') {
     transitionToSection('main');
-  } else {
+  } else if (!isValidSection && hash) {
+    // Invalid hash, go to main
     const idx = CONFIG.sections.findIndex(s => s.id === hash);
     if (idx >= 0) {
       selectedIndex = idx;
@@ -2793,6 +3041,9 @@ function runRouteCheck() {
       }
     }
   }
+  
+  // After first route check, no longer initial load
+  isInitialLoad = false;
 }
 
 // Run immediately + on every load/refresh
@@ -2800,7 +3051,10 @@ runRouteCheck();
 window.addEventListener('DOMContentLoaded', runRouteCheck);
 window.addEventListener('load', runRouteCheck);
 
-// Keep listening for normal navigation too
-window.addEventListener('hashchange', runRouteCheck);
+// Keep listening for normal navigation too (these are never initial loads)
+window.addEventListener('hashchange', () => {
+  isInitialLoad = false;  // Ensure animated transitions for hash changes
+  runRouteCheck();
+});
 
 console.log('Hypsosis Hub v10 - Mobile responsive: centered layout for portrait, proper scaling for all screen sizes');
